@@ -1,0 +1,1887 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RJEZM DIGITAL - Print Cost Calculator</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Space Grotesk', sans-serif; }
+    html, body { height: 100%; margin: 0; }
+    .tab-active { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3); }
+    .tab-inactive { background: rgba(71, 85, 105, 0.3); color: #cbd5e1; transition: all 0.3s ease; }
+    .tab-inactive:hover { background: rgba(71, 85, 105, 0.5); }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 24px; height: 24px; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 50%; border: 2px solid white; cursor: grab; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4); }
+    input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 50%; border: 2px solid white; cursor: grab; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(6, 182, 212, 0.15); }
+    .stat-card { background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%); border: 1px solid rgba(6, 182, 212, 0.2); }
+    .cmyk-color { padding: 12px; border-radius: 8px; font-size: 12px; font-weight: bold; text-align: center; color: white; }
+    .cmyk-cyan { background: #00bfff; }
+    .cmyk-magenta { background: #ff1493; }
+    .cmyk-yellow { background: #ffd700; color: black; }
+    .cmyk-black { background: #1a1a1a; }
+    .ink-bottle { position: relative; height: 100%; width: 100%; display: flex; align-items: flex-end; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.2); }
+    #receipt-print { width: 80mm; font-family: monospace; background: white; color: black; }
+  </style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-auto flex flex-col"><!-- AUTH SCREEN -->
+  <div id="auth-screen" class="w-full h-full flex items-center justify-center p-4">
+   <div class="max-w-md w-full">
+    <div class="bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
+     <div class="text-center mb-8">
+      <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 flex items-center justify-center shadow-lg shadow-cyan-500/50 mx-auto mb-4">
+       <span class="text-3xl font-bold text-slate-950">◆</span>
+      </div>
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">RJEZM DIGITAL</h1>
+      <p class="text-slate-400 text-sm mt-2">Print Cost Calculator</p>
+     </div><!-- LOGIN FORM -->
+     <div id="login-form" class="space-y-4">
+      <div>
+       <label class="block text-slate-300 text-sm font-bold mb-2">Email</label> <input type="email" id="login-email" placeholder="your@email.com" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-sm font-bold mb-2">Password</label> <input type="password" id="login-password" placeholder="••••••••" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div><button onclick="handleLogin()" class="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg">Sign In</button>
+      <p class="text-center text-slate-400 text-sm">Don't have an account? <button onclick="switchToSignup()" class="text-cyan-400 hover:text-cyan-300 font-bold transition">Create one</button></p>
+      <div id="login-error" class="hidden bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg text-sm text-center"></div>
+     </div><!-- REGISTRATION CODE SIGNUP -->
+     <div id="code-signup-form" class="hidden space-y-4">
+      <div>
+       <label class="block text-slate-300 text-sm font-bold mb-2">Email</label> <input type="email" id="code-email" placeholder="your@email.com" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-sm font-bold mb-2">Password</label> <input type="password" id="code-password" placeholder="••••••••" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-sm font-bold mb-2">Registration Code</label> <input type="text" id="code-input" placeholder="Enter your unique code" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition uppercase">
+      </div><button onclick="handleCodeSignup()" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg">Create Account</button>
+      <p class="text-center text-slate-400 text-sm">Have an account? <button onclick="switchToLogin()" class="text-cyan-400 hover:text-cyan-300 font-bold transition">Sign in</button></p>
+      <div id="code-signup-error" class="hidden bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg text-sm text-center"></div>
+     </div><!-- ADMIN LOGIN -->
+     <div class="mt-6 pt-6 border-t border-slate-700/50">
+      <button type="button" onclick="openAdminModal()" class="w-full text-slate-400 hover:text-slate-300 text-xs font-bold py-2 transition">🔐 Admin Access</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- ADMIN PASSWORD MODAL -->
+  <div id="admin-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center p-4 z-50">
+   <div class="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700">
+    <h2 class="text-2xl font-bold text-white mb-4">Admin Access</h2>
+    <div class="space-y-4">
+     <div>
+      <label class="block text-slate-300 text-sm font-bold mb-2">Password</label> <input type="password" id="admin-password-input" placeholder="Enter admin password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div id="admin-modal-error" class="hidden bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg text-sm text-center"></div>
+     <div class="flex gap-3">
+      <button onclick="closeAdminModal()" class="flex-1 px-4 py-2 border border-slate-600 text-slate-300 hover:bg-slate-700 rounded-lg transition font-bold">Cancel</button> <button onclick="verifyAdminPassword()" class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-lg transition transform hover:scale-105">Enter</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- ADMIN SCREEN -->
+  <div id="admin-screen" class="hidden w-full flex-1 p-4 flex flex-col overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+   <div class="max-w-7xl mx-auto w-full flex-1">
+    <header class="mb-8 pb-6 border-b border-slate-700/50">
+     <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Admin Dashboard</h1><button onclick="handleAdminLogout()" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-4 py-2 rounded-lg font-bold transition">Logout</button>
+     </div>
+    </header><!-- ADMIN TABS -->
+    <div class="flex gap-2 mb-6 flex-wrap overflow-x-auto pb-2"><button onclick="switchAdminTab('overview')" id="admin-tab-overview" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold tab-active text-sm transition">📊 Overview</button> <button onclick="switchAdminTab('users')" id="admin-tab-users" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">👥 Users</button> <button onclick="switchAdminTab('codes')" id="admin-tab-codes" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">🎟️ Codes</button> <button onclick="switchAdminTab('settings')" id="admin-tab-settings" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">⚙️ Settings</button> <button onclick="switchAdminTab('audit')" id="admin-tab-audit" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">📋 Audit</button>
+    </div><!-- OVERVIEW TAB -->
+    <div id="admin-content-overview" class="admin-tab-content space-y-6"><!-- STATS CARDS -->
+     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="stat-card rounded-lg p-4 card-hover">
+       <p class="text-purple-400 text-xs font-bold uppercase mb-2">Active Users</p>
+       <p id="stat-active-users" class="text-3xl font-bold text-white">0</p>
+       <p class="text-slate-500 text-xs mt-2">This month</p>
+      </div>
+      <div class="stat-card rounded-lg p-4 card-hover">
+       <p class="text-cyan-400 text-xs font-bold uppercase mb-2">Codes Generated</p>
+       <p id="stat-total-codes" class="text-3xl font-bold text-white">0</p>
+       <p class="text-slate-500 text-xs mt-2"><span id="stat-codes-used" class="text-emerald-400">0</span> used</p>
+      </div>
+      <div class="stat-card rounded-lg p-4 card-hover">
+       <p class="text-emerald-400 text-xs font-bold uppercase mb-2">Avg Products/User</p>
+       <p id="stat-avg-products" class="text-3xl font-bold text-white">0</p>
+       <p class="text-slate-500 text-xs mt-2">Per user</p>
+      </div>
+      <div class="stat-card rounded-lg p-4 card-hover">
+       <p class="text-amber-400 text-xs font-bold uppercase mb-2">Total Revenue</p>
+       <p id="stat-total-revenue" class="text-3xl font-bold text-white">₱0.00</p>
+       <p class="text-slate-500 text-xs mt-2">All users</p>
+      </div>
+     </div><!-- CHARTS SECTION -->
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><!-- CODE USAGE CHART -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <h3 class="text-lg font-bold text-white mb-4">Registration Code Status</h3>
+       <div class="space-y-3">
+        <div>
+         <div class="flex justify-between items-center mb-2"><span class="text-sm text-emerald-400 font-bold">Used Codes</span> <span id="code-status-used" class="text-sm text-white font-bold">0</span>
+         </div>
+         <div class="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
+          <div id="code-usage-bar" class="bg-gradient-to-r from-emerald-500 to-green-600 h-full transition-all duration-500" style="width: 0%"></div>
+         </div>
+        </div>
+        <div>
+         <div class="flex justify-between items-center mb-2"><span class="text-sm text-amber-400 font-bold">Available Codes</span> <span id="code-status-available" class="text-sm text-white font-bold">0</span>
+         </div>
+         <div class="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
+          <div id="code-available-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-full transition-all duration-500" style="width: 0%"></div>
+         </div>
+        </div>
+       </div>
+      </div><!-- USER ACTIVITY CHART -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <h3 class="text-lg font-bold text-white mb-4">User Activity Status</h3>
+       <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-700/50">
+         <div class="flex items-center gap-2"><span class="text-2xl">🟢</span>
+          <div>
+           <p class="text-white font-bold text-sm">Active Users</p>
+           <p class="text-slate-400 text-xs">Logged in this week</p>
+          </div>
+         </div>
+         <p id="active-this-week" class="text-2xl font-bold text-emerald-400">0</p>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-700/50">
+         <div class="flex items-center gap-2"><span class="text-2xl">🟡</span>
+          <div>
+           <p class="text-white font-bold text-sm">Idle Users</p>
+           <p class="text-slate-400 text-xs">No activity in 30 days</p>
+          </div>
+         </div>
+         <p id="idle-users" class="text-2xl font-bold text-amber-400">0</p>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-700/50">
+         <div class="flex items-center gap-2"><span class="text-2xl">🆕</span>
+          <div>
+           <p class="text-white font-bold text-sm">New Users</p>
+           <p class="text-slate-400 text-xs">Registered this month</p>
+          </div>
+         </div>
+         <p id="new-users-month" class="text-2xl font-bold text-cyan-400">0</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- USERS TAB -->
+    <div id="admin-content-users" class="admin-tab-content hidden space-y-6">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-white">User Management</h2><input type="text" id="user-search" placeholder="Search users..." class="bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition text-sm">
+     </div>
+     <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+      <div id="users-detail-list" class="space-y-3">
+       <p class="text-slate-500 text-center py-8">No users yet.</p>
+      </div>
+     </div>
+    </div><!-- CODES TAB -->
+    <div id="admin-content-codes" class="admin-tab-content hidden space-y-6">
+     <div class="space-y-6"><!-- GENERATE CODES -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <h2 class="text-2xl font-bold text-white mb-4">Generate Registration Codes</h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50">
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">Number of Codes</label> <input type="number" id="num-codes" value="5" min="1" max="100" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <div class="flex items-end">
+         <button onclick="generateCodes()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">Generate</button>
+        </div>
+       </div>
+      </div><!-- CODES LIST -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-white">All Registration Codes</h2><span id="codes-count" class="text-xs font-bold bg-purple-500/30 text-purple-300 px-3 py-1 rounded-full">0 codes</span>
+       </div>
+       <div id="codes-list" class="space-y-2 max-h-96 overflow-y-auto">
+        <p class="text-slate-500 text-center py-6">No codes generated yet.</p>
+       </div>
+      </div>
+     </div>
+    </div><!-- SETTINGS TAB -->
+    <div id="admin-content-settings" class="admin-tab-content hidden space-y-6">
+     <div class="space-y-6"><!-- CHANGE ADMIN PASSWORD -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <h2 class="text-2xl font-bold text-white mb-4">🔐 Change Admin Password</h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50">
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">Current Password</label> <input type="password" id="admin-current-pass" placeholder="Current password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">New Password</label> <input type="password" id="admin-new-pass" placeholder="New password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <div class="flex items-end">
+         <button onclick="changeAdminPassword()" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">Update</button>
+        </div>
+       </div>
+       <div id="admin-pass-message" class="hidden mt-3 p-3 rounded-lg text-sm text-center border"></div>
+      </div><!-- USER RECOVERY -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <h2 class="text-2xl font-bold text-white mb-4">🔓 User Account Recovery</h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50">
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">User Email</label> <input type="email" id="recovery-email" placeholder="user@email.com" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">New Password</label> <input type="text" id="recovery-password" placeholder="Enter new password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <div class="flex items-end">
+         <button onclick="recoverUserAccount()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">Reset Account</button>
+        </div>
+       </div>
+      </div><!-- COMPANY BRANDING -->
+      <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+       <h2 class="text-2xl font-bold text-white mb-4">🎨 Company Branding</h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50">
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">Company Name</label> <input type="text" id="company-name" placeholder="RJEZM DIGITAL" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <div>
+         <label class="block text-slate-300 text-sm font-bold mb-2">Tagline</label> <input type="text" id="company-tagline" placeholder="Professional Print Solutions" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+       </div><button onclick="saveBrandingSettings()" class="mt-4 w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">💾 Save Branding</button>
+      </div>
+     </div>
+    </div><!-- AUDIT LOG TAB -->
+    <div id="admin-content-audit" class="admin-tab-content hidden space-y-6">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-white">📋 Audit Log</h2><button onclick="clearAuditLog()" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-1 rounded-lg text-xs font-bold transition">Clear Log</button>
+     </div>
+     <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+      <div id="audit-log-list" class="space-y-2 max-h-96 overflow-y-auto font-mono text-xs">
+       <p class="text-slate-500 text-center py-8">No audit logs yet.</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- APP SCREEN -->
+  <div id="app-screen" class="hidden w-full flex-1 p-4 flex flex-col overflow-auto">
+   <div class="flex-1 max-w-7xl mx-auto w-full">
+    <header class="mb-8 pb-6 border-b border-slate-700/50">
+     <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+       <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+        <span class="text-2xl font-bold text-slate-950">◆</span>
+       </div>
+       <div>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">RJEZM DIGITAL</h1>
+        <p class="text-xs text-cyan-400/80 font-semibold">Print Cost Calculator</p>
+       </div>
+      </div>
+      <div class="text-right flex items-center gap-4">
+       <div>
+        <p class="text-xs font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">RJEZM DIGITAL</p>
+        <p class="text-xs text-slate-500 mt-1" id="user-email">Professional Edition</p>
+       </div><button onclick="openPasswordChangeModal()" class="bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 px-3 py-2 rounded-lg text-xs font-bold transition">🔑 Change Password</button> <button onclick="handleLogout()" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-2 rounded-lg text-xs font-bold transition">Logout</button>
+      </div>
+     </div>
+    </header>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+     <div class="stat-card rounded-lg p-3">
+      <p class="text-slate-400 text-xs font-semibold mb-1">Materials</p>
+      <p class="text-lg font-bold text-cyan-400" id="stat-materials">0</p>
+     </div>
+     <div class="stat-card rounded-lg p-3">
+      <p class="text-slate-400 text-xs font-semibold mb-1">Costing Items</p>
+      <p class="text-lg font-bold text-emerald-400" id="stat-costing">0</p>
+     </div>
+     <div class="stat-card rounded-lg p-3">
+      <p class="text-slate-400 text-xs font-semibold mb-1">Saved Products</p>
+      <p class="text-lg font-bold text-amber-400" id="stat-products">0</p>
+     </div>
+     <div class="stat-card rounded-lg p-3">
+      <p class="text-slate-400 text-xs font-semibold mb-1">Total Revenue</p>
+      <p class="text-lg font-bold text-green-400" id="stat-revenue">₱0.00</p>
+     </div>
+    </div>
+    <div class="flex gap-2 mb-6 flex-wrap overflow-x-auto pb-2">
+     <button onclick="switchTab('inventory')" id="tab-inventory" class="flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold tab-active text-sm transition">📦 Materials</button> <button onclick="switchTab('costing')" id="tab-costing" class="flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">🧮 Costing</button> <button onclick="switchTab('cmyk')" id="tab-cmyk" class="flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">🎨 CMYK Ink</button> <button onclick="switchTab('calculator')" id="tab-calculator" class="flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">💰 Calculator</button> <button onclick="switchTab('products')" id="tab-products" class="flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">📋 Products</button> <button onclick="switchTab('receipt')" id="tab-receipt" class="flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold tab-inactive text-sm transition">🧾 Receipt</button>
+    </div><!-- INVENTORY TAB -->
+    <div id="content-inventory" class="tab-content bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur space-y-8"><!-- INK MATERIALS SECTION -->
+     <div class="bg-slate-700/30 rounded-2xl p-6 border border-slate-700/50">
+      <h2 class="text-2xl font-bold text-white mb-6">🎨 Ink Materials</h2>
+      <form id="ink-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-slate-700/20 p-4 rounded-xl border border-slate-700/50" onsubmit="return false;">
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Ink Color</label> <select id="ink-color" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition"><option value="">-- Select Color --</option><option value="Cyan">Cyan</option><option value="Magenta">Magenta</option><option value="Yellow">Yellow</option><option value="Black">Black</option></select>
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Total Cost (₱)</label> <input type="number" id="ink-total-cost" placeholder="0.00" step="0.01" min="0" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">ML per Bottle</label> <input type="number" id="ink-ml-bottle" placeholder="70" min="1" step="1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Qty (Bottles)</label> <input type="number" id="ink-qty-bottles" placeholder="1" min="1" value="1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div class="flex items-end">
+        <button type="button" onclick="addInkMaterial()" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">+ Add Ink</button>
+       </div>
+      </form>
+      <h3 class="text-lg font-bold text-white mb-3 border-b border-slate-700/50 pb-2">Ink Stock</h3>
+      <div id="ink-list" class="space-y-2">
+       <p class="text-slate-500 text-center py-6">No ink materials added yet.</p>
+      </div>
+     </div><!-- GENERAL MATERIALS SECTION -->
+     <div class="bg-slate-700/30 rounded-2xl p-6 border border-slate-700/50">
+      <h2 class="text-2xl font-bold text-white mb-6">📦 General Materials</h2>
+      <form id="material-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-700/20 p-4 rounded-xl border border-slate-700/50" onsubmit="return false;">
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Material Name</label> <input type="text" id="material-name" placeholder="e.g., Paper Roll" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Total Cost</label> <input type="number" id="material-cost" placeholder="0.00" step="0.01" min="0" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Quantity (Pieces)</label> <input type="number" id="material-qty" placeholder="0" min="1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div class="flex items-end">
+        <button type="button" onclick="addMaterial()" class="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">+ Add</button>
+       </div>
+      </form>
+      <h3 class="text-lg font-bold text-white mb-3 border-b border-slate-700/50 pb-2">Material Inventory</h3>
+      <div id="material-list" class="space-y-2">
+       <p class="text-slate-500 text-center py-6">No materials added yet.</p>
+      </div>
+     </div>
+    </div><!-- COSTING TAB -->
+    <div id="content-costing" class="tab-content hidden bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur space-y-6">
+     <div class="mb-4">
+      <h2 class="text-2xl font-bold text-white">Material Costing</h2>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <form id="costing-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" onsubmit="return false;">
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Select Material</label> <select id="costing-material" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition"><option value="">-- Select a material --</option></select>
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Quantity Needed</label> <input type="number" id="costing-qty" placeholder="0" min="0.01" step="0.01" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div class="flex items-end">
+        <button type="button" onclick="addCosting()" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">+ Add</button>
+       </div>
+      </form>
+     </div>
+     <h3 class="text-lg font-bold text-white mb-3 border-b border-slate-700/50 pb-3">Active Costing Items</h3>
+     <div class="bg-slate-700/20 rounded-xl p-4 border border-slate-700/50">
+      <div id="costing-list" class="space-y-2">
+       <p class="text-slate-500 text-center py-6">No materials added to costing yet.</p>
+      </div>
+      <div id="costing-total" class="hidden mt-4 p-4 bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/50 rounded-xl">
+       <div class="flex justify-between items-center">
+        <span class="text-emerald-400 font-bold text-lg">Total Material Cost:</span> <span id="costing-total-value" class="text-3xl font-bold text-white">₱0.00</span>
+       </div>
+      </div>
+     </div>
+     <hr class="border-slate-700/50">
+     <div>
+      <h2 class="text-2xl font-bold text-white mb-4">⚡ Electricity Cost</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Machine Power (Watts)</label> <input type="number" id="elec-power" placeholder="500" step="1" min="0" value="500" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Rate (₱/kWh)</label> <input type="number" id="elec-rate" placeholder="12" step="0.01" min="0" value="12" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Runtime (minutes)</label> <input type="number" id="elec-runtime" placeholder="5" step="0.1" min="0.1" value="5" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Number of Jobs</label> <input type="number" id="elec-num-jobs" placeholder="1" min="1" value="1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+      </div><button onclick="calculateElectricity()" class="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105 shadow-lg shadow-yellow-500/25">⚡ CALCULATE ELECTRICITY COST</button>
+      <div id="elec-breakdown" class="hidden mt-4">
+       <div class="grid grid-cols-2 gap-2">
+        <div class="p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/50 rounded-lg">
+         <p class="text-yellow-400 text-xs font-bold uppercase">Cost per Job</p>
+         <p id="elec-cost-per-job" class="text-white font-bold text-lg">₱0.00</p>
+        </div>
+        <div class="p-3 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/50 rounded-lg">
+         <p class="text-orange-400 text-xs font-bold uppercase">Total Elec</p>
+         <p id="elec-total-cost" class="text-white font-bold text-lg">₱0.00</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- CMYK TAB -->
+    <div id="content-cmyk" class="tab-content hidden bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur space-y-6">
+     <h2 class="text-2xl font-bold text-white mb-6">🎨 CMYK Ink Costing System</h2>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <label class="block text-slate-300 text-sm font-bold mb-3 uppercase">Select Printer Model</label> <select id="printerSelect" onchange="loadPrinterYield()" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition"><option value="">-- Select Printer --</option><optgroup label="EPSON"><option value="epsonL120">Epson L120</option><option value="epsonL3210">Epson L3210</option><option value="epsonL3250">Epson L3250</option><option value="epsonL5290">Epson L5290</option><option value="epsonL805">Epson L805 (Photo)</option></optgroup><optgroup label="BROTHER"><option value="brotherT420">Brother DCP-T420W</option><option value="brotherT520">Brother DCP-T520W</option><option value="brotherT720">Brother DCP-T720DW</option><option value="brotherT820">Brother DCP-T820DW</option><option value="brotherT920">Brother MFC-T920DW</option></optgroup></select>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <div class="flex items-center justify-between mb-4">
+       <h3 class="text-white font-bold text-sm uppercase">Ink Cost Per ML (From Inventory)</h3><span id="ink-inventory-status" class="text-xs font-bold px-2 py-1 rounded-full bg-red-500/30 text-red-300">⚠️ Add Ink to Inventory</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+       <div class="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600/50">
+        <p class="text-slate-400 text-xs font-bold mb-2">CYAN</p>
+        <div id="cCost-display" class="text-cyan-400 font-bold text-lg">
+         —
+        </div>
+        <p id="cCost-label" class="text-slate-500 text-xs mt-1">Not added</p>
+       </div>
+       <div class="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600/50">
+        <p class="text-slate-400 text-xs font-bold mb-2">MAGENTA</p>
+        <div id="mCost-display" class="text-pink-400 font-bold text-lg">
+         —
+        </div>
+        <p id="mCost-label" class="text-slate-500 text-xs mt-1">Not added</p>
+       </div>
+       <div class="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600/50">
+        <p class="text-slate-400 text-xs font-bold mb-2">YELLOW</p>
+        <div id="yCost-display" class="text-yellow-400 font-bold text-lg">
+         —
+        </div>
+        <p id="yCost-label" class="text-slate-500 text-xs mt-1">Not added</p>
+       </div>
+       <div class="text-center p-3 bg-slate-700/50 rounded-lg border border-slate-600/50">
+        <p class="text-slate-400 text-xs font-bold mb-2">BLACK</p>
+        <div id="kCost-display" class="text-gray-400 font-bold text-lg">
+         —
+        </div>
+        <p id="kCost-label" class="text-slate-500 text-xs mt-1">Not added</p>
+       </div>
+      </div>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <div class="flex items-center justify-between mb-4">
+       <h3 class="text-white font-bold text-sm uppercase">Current Stock Levels</h3><button onclick="openStockUpdateModal()" class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-3 py-1 rounded-lg text-xs font-bold transition">✏️ Update</button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+       <div class="flex flex-col"><label class="text-slate-300 text-xs font-bold mb-3 block">Cyan Stock</label>
+        <div class="relative h-24 bg-slate-700/50 border-2 border-slate-600 rounded-lg overflow-hidden flex items-end justify-center mb-3">
+         <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10"><span class="text-white font-bold text-sm drop-shadow-lg"><span id="cStock-display">0</span> ml</span>
+         </div>
+         <div id="cyan-level" class="w-full transition-all duration-500" style="height: 0%; background: #00bfff;"></div>
+        </div><button onclick="refillInk(0)" class="bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 px-2 py-1 rounded text-xs font-bold transition w-full">🔄 Refill</button>
+       </div>
+       <div class="flex flex-col"><label class="text-slate-300 text-xs font-bold mb-3 block">Magenta Stock</label>
+        <div class="relative h-24 bg-slate-700/50 border-2 border-slate-600 rounded-lg overflow-hidden flex items-end justify-center mb-3">
+         <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10"><span class="text-white font-bold text-sm drop-shadow-lg"><span id="mStock-display">0</span> ml</span>
+         </div>
+         <div id="magenta-level" class="w-full transition-all duration-500" style="height: 0%; background: #ff1493;"></div>
+        </div><button onclick="refillInk(1)" class="bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 px-2 py-1 rounded text-xs font-bold transition w-full">🔄 Refill</button>
+       </div>
+       <div class="flex flex-col"><label class="text-slate-300 text-xs font-bold mb-3 block">Yellow Stock</label>
+        <div class="relative h-24 bg-slate-700/50 border-2 border-slate-600 rounded-lg overflow-hidden flex items-end justify-center mb-3">
+         <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10"><span class="text-white font-bold text-sm drop-shadow-lg"><span id="yStock-display">0</span> ml</span>
+         </div>
+         <div id="yellow-level" class="w-full transition-all duration-500" style="height: 0%; background: #ffd700;"></div>
+        </div><button onclick="refillInk(2)" class="bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 px-2 py-1 rounded text-xs font-bold transition w-full">🔄 Refill</button>
+       </div>
+       <div class="flex flex-col"><label class="text-slate-300 text-xs font-bold mb-3 block">Black Stock</label>
+        <div class="relative h-24 bg-slate-700/50 border-2 border-slate-600 rounded-lg overflow-hidden flex items-end justify-center mb-3">
+         <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10"><span class="text-white font-bold text-sm drop-shadow-lg"><span id="kStock-display">0</span> ml</span>
+         </div>
+         <div id="black-level" class="w-full transition-all duration-500" style="height: 0%; background: #1a1a1a;"></div>
+        </div><button onclick="refillInk(3)" class="bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 px-2 py-1 rounded text-xs font-bold transition w-full">🔄 Refill</button>
+       </div>
+      </div>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <h3 class="text-white font-bold mb-4 text-sm uppercase">Print Job Details</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Number of Pages</label> <input type="number" id="pages" placeholder="100" min="1" value="100" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Coverage %</label> <input type="number" id="coverage" value="5" min="0" max="100" step="0.1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+       <div>
+        <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Waste %</label> <input type="number" id="waste" value="3" min="0" max="100" step="0.1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+       </div>
+      </div>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <label class="block text-slate-300 text-sm font-bold mb-4">Quality Multiplier: <span id="quality-display" class="text-cyan-400 font-bold text-lg">1.0</span> - <span id="quality-label" class="text-cyan-400">Standard</span></label> <input type="range" id="ink-quality-mult" min="1" max="5" value="1" step="0.1" class="w-full h-3 rounded-full cursor-grab appearance-none transition" style="background: linear-gradient(90deg, #06b6d4 0%, #22c55e 50%, #eab308 100%);" oninput="updateQualityLabel()">
+      <div class="flex justify-between text-xs text-slate-500 mt-3">
+       <span>1.0x (Standard)</span> <span>3.0x (Premium)</span> <span>5.0x (Maximum)</span>
+      </div>
+     </div><button onclick="calculateCMYK()" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl transition transform hover:scale-105 text-lg shadow-lg shadow-purple-500/25">🎨 CALCULATE CMYK COST</button>
+     <div id="cmyk-result" class="hidden">
+      <h3 class="text-xl font-bold text-white mb-4 border-b border-slate-700 pb-3">Cost Breakdown</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+       <div class="cmyk-color cmyk-cyan">
+        <p class="text-xs font-bold">CYAN</p>
+        <p id="cmyk-c-cost" class="text-lg">₱0.00</p>
+       </div>
+       <div class="cmyk-color cmyk-magenta">
+        <p class="text-xs font-bold">MAGENTA</p>
+        <p id="cmyk-m-cost" class="text-lg">₱0.00</p>
+       </div>
+       <div class="cmyk-color cmyk-yellow">
+        <p class="text-xs font-bold">YELLOW</p>
+        <p id="cmyk-y-cost" class="text-lg">₱0.00</p>
+       </div>
+       <div class="cmyk-color cmyk-black">
+        <p class="text-xs font-bold">BLACK</p>
+        <p id="cmyk-k-cost" class="text-lg">₱0.00</p>
+       </div>
+      </div>
+      <div class="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-2 border-purple-500/50 rounded-xl p-6 card-hover">
+       <div class="text-center">
+        <p class="text-purple-400 text-xs font-bold uppercase mb-2">Total CMYK Ink Cost</p>
+        <p id="cmyk-total-cost" class="text-4xl font-bold text-white">₱0.00</p>
+       </div>
+      </div>
+      <div id="stock-update" class="mt-4 p-4 bg-slate-700/20 rounded-xl border border-slate-700/50">
+       <h4 class="text-white font-bold mb-3 text-sm">Updated Stock Levels (After Print)</h4>
+       <div class="grid grid-cols-4 gap-3 text-xs mb-4">
+        <div class="text-center p-2 bg-slate-700/50 rounded-lg">
+         <p class="text-cyan-400 font-bold">Cyan</p>
+         <p id="stock-c" class="text-white">0</p>
+        </div>
+        <div class="text-center p-2 bg-slate-700/50 rounded-lg">
+         <p class="text-pink-400 font-bold">Magenta</p>
+         <p id="stock-m" class="text-white">0</p>
+        </div>
+        <div class="text-center p-2 bg-slate-700/50 rounded-lg">
+         <p class="text-yellow-600 font-bold">Yellow</p>
+         <p id="stock-y" class="text-white">0</p>
+        </div>
+        <div class="text-center p-2 bg-slate-700/50 rounded-lg">
+         <p class="text-gray-400 font-bold">Black</p>
+         <p id="stock-k" class="text-white">0</p>
+        </div>
+       </div><button onclick="applyAutomaticStockUpdate()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105">✅ Apply Stock Update</button>
+      </div>
+     </div>
+    </div><!-- CALCULATOR TAB -->
+    <div id="content-calculator" class="tab-content hidden bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur space-y-6">
+     <h2 class="text-2xl font-bold text-white mb-6">Product Cost Calculator</h2>
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <div>
+       <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Product Name</label> <input type="text" id="product-name" placeholder="e.g., Banner 3x5ft" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Quantity</label> <input type="number" id="product-qty" placeholder="1" min="1" value="1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Labor Cost</label> <input type="number" id="labor-cost" placeholder="0.00" step="0.01" min="0" value="0" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Overhead Cost</label> <input type="number" id="overhead-cost" placeholder="0.00" step="0.01" min="0" value="0" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Machine Cost</label> <input type="number" id="machine-cost" placeholder="0.00" step="0.01" min="0" value="0" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div>
+       <label class="block text-slate-300 text-xs font-bold mb-2 uppercase">Tax Rate %</label> <input type="number" id="tax-rate" placeholder="0" step="0.1" min="0" max="100" value="0" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <label class="block text-slate-300 text-sm font-bold mb-3 uppercase">Ink Cost (from CMYK calculator): <span id="calc-total-ink" class="text-cyan-400 font-bold text-lg">₱0.00</span></label>
+     </div>
+     <div class="bg-slate-700/20 p-4 rounded-xl border border-slate-700/50">
+      <div class="flex justify-between items-center mb-3">
+       <label class="text-slate-300 font-bold">Profit Margin: <span id="margin-display" class="text-amber-400 font-bold text-lg">30%</span></label>
+      </div><input type="range" id="profit-margin" min="0" max="200" value="30" class="w-full h-3 rounded-full cursor-grab appearance-none transition" style="background: linear-gradient(90deg, #06b6d4 0%, #22c55e 50%, #eab308 100%);" oninput="document.getElementById('margin-display').textContent = this.value + '%'">
+      <div class="flex justify-between text-xs text-slate-500 mt-2">
+       <span>0%</span> <span>100%</span> <span>200%</span>
+      </div>
+     </div><button onclick="performCalculation()" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl transition transform hover:scale-105 text-lg shadow-lg shadow-purple-500/25">💰 CALCULATE PRODUCT COST</button>
+     <div id="breakdown-section" class="hidden">
+      <h3 class="text-xl font-bold text-white border-b border-slate-700 pb-4 mb-6">📊 Cost Breakdown</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-emerald-400 text-xs font-bold uppercase">Material</p>
+        <p id="bd-material" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-purple-400 text-xs font-bold uppercase">Labor</p>
+        <p id="bd-labor" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-pink-400 text-xs font-bold uppercase">Overhead</p>
+        <p id="bd-overhead" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-red-400 text-xs font-bold uppercase">Machine</p>
+        <p id="bd-machine" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-cyan-400 text-xs font-bold uppercase">Ink (CMYK)</p>
+        <p id="bd-ink" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-yellow-400 text-xs font-bold uppercase">Electricity</p>
+        <p id="bd-electricity" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-blue-400 text-xs font-bold uppercase">Subtotal</p>
+        <p id="bd-subtotal" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+       <div class="stat-card rounded-lg p-3 card-hover">
+        <p class="text-yellow-600 text-xs font-bold uppercase">Tax</p>
+        <p id="bd-tax" class="text-white font-bold text-lg mt-1">₱0.00</p>
+       </div>
+      </div>
+      <div class="bg-gradient-to-r from-amber-500/30 to-orange-500/30 border-2 border-amber-500/50 rounded-xl p-6 mb-4 card-hover">
+       <div class="text-center">
+        <p class="text-amber-400 text-xs font-bold uppercase mb-2">🎯 Total Cost</p>
+        <p id="bd-total-cost" class="text-4xl font-bold text-white">₱0.00</p>
+        <p class="text-slate-400 text-xs mt-3">Per unit: <span id="bd-per-unit" class="text-amber-300 font-bold">₱0.00</span></p>
+       </div>
+      </div>
+      <div class="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-2 border-green-500/50 rounded-xl p-6 mb-6 card-hover">
+       <div class="text-center">
+        <p class="text-green-400 text-xs font-bold uppercase mb-2">💰 Recommended Selling Price</p>
+        <p id="bd-selling-price" class="text-4xl font-bold text-white">₱0.00</p>
+        <p class="text-slate-400 text-xs mt-3">Per unit: <span id="bd-price-per-unit" class="text-green-300 font-bold">₱0.00</span></p>
+       </div>
+      </div>
+      <div class="flex gap-3">
+       <button onclick="saveProduct()" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition transform hover:scale-105 shadow-lg">💾 Save Product</button> <button onclick="goToReceiptPrinter()" class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 px-4 rounded-xl transition transform hover:scale-105 shadow-lg">🧾 To Receipt</button>
+      </div>
+     </div>
+    </div><!-- PRODUCTS TAB -->
+    <div id="content-products" class="tab-content hidden bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+     <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">Saved Products</h2>
+     </div>
+     <div id="products-list" class="space-y-2">
+      <p class="text-slate-500 text-center py-8">No products saved yet.</p>
+     </div>
+    </div><!-- RECEIPT PRINTER TAB -->
+    <div id="content-receipt" class="tab-content hidden bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur">
+     <h2 class="text-2xl font-bold text-white mb-6">Receipt Printer</h2>
+     <div class="flex gap-3 mb-6">
+      <button onclick="openReceiptModal()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-bold transition transform hover:scale-105 shadow-lg">✏️ Edit Details</button> <button onclick="printReceipt()" class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-xl font-bold transition transform hover:scale-105 shadow-lg">🖨️ Print Receipt</button>
+     </div>
+     <div class="bg-gradient-to-b from-slate-700/30 to-slate-800/20 rounded-2xl p-8 border border-slate-700/50">
+      <div id="receipt-print" class="bg-white text-black p-6 rounded-lg shadow-xl mx-auto max-w-xs text-sm font-mono">
+       <h2 id="companyName" class="text-center font-bold text-lg">RJEZM DIGITAL</h2>
+       <p class="text-center text-xs text-slate-600">Professional Print Solutions</p>
+       <p class="text-center text-xs">Receipt</p>
+       <hr class="my-2">
+       <p class="text-xs">Buyer: <span id="buyerName">Walk-in</span></p>
+       <p class="text-xs">Date: <span id="receiptDate"></span></p>
+       <hr class="my-2">
+       <table class="w-full text-xs">
+        <thead>
+         <tr class="font-bold border-b border-black">
+          <th class="text-left py-1">Item</th>
+          <th class="text-center py-1">Qty</th>
+          <th class="text-right py-1">Amt</th>
+         </tr>
+        </thead>
+        <tbody id="receiptItems"></tbody>
+       </table>
+       <hr class="my-2">
+       <p class="text-xs">Subtotal: ₱<span id="receiptSubtotal">0.00</span></p>
+       <p class="text-xs">Tax: ₱<span id="receiptTaxAmount">0.00</span></p>
+       <p class="font-bold text-xs border-t border-black pt-1">Total: ₱<span id="receiptTotal">0.00</span></p>
+       <hr class="my-2">
+       <p class="text-center text-xs">Thank you for your business!</p>
+       <p class="text-center text-xs text-slate-600 mt-1">RJEZM DIGITAL • v10</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <footer class="mt-auto border-t border-slate-700/50 bg-slate-900/50 backdrop-blur py-4 px-4">
+   <div class="max-w-7xl mx-auto text-center space-y-2">
+    <p class="text-slate-400 text-xs"><span class="font-bold text-cyan-400">RJEZM DIGITAL</span> • Print Cost Calculator ♦ <span class="text-purple-400">Version 10</span></p>
+    <p class="text-slate-500 text-xs">Professional Edition ♦ Materials • Costing • CMYK Ink System • Receipt Printer</p>
+    <p class="text-slate-600 text-xs">© 2026 RJEZM DIGITAL. All rights reserved.</p>
+   </div>
+  </footer><!-- PASSWORD CHANGE MODAL -->
+  <div id="passwordChangeModal" class="z-50 fixed inset-0 hidden bg-black/70 backdrop-blur flex items-center justify-center p-4">
+   <div class="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700">
+    <h2 class="text-2xl font-bold text-white mb-4">Change Password</h2>
+    <div class="space-y-4">
+     <div>
+      <label class="block text-slate-300 text-sm font-bold mb-2">Current Password</label> <input type="password" id="current-password" placeholder="Enter current password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div>
+      <label class="block text-slate-300 text-sm font-bold mb-2">New Password</label> <input type="password" id="new-password" placeholder="Enter new password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div>
+      <label class="block text-slate-300 text-sm font-bold mb-2">Confirm New Password</label> <input type="password" id="confirm-password" placeholder="Confirm new password" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div id="password-change-error" class="hidden bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg text-sm text-center"></div>
+     <div id="password-change-success" class="hidden bg-green-500/20 border border-green-500/50 text-green-300 p-3 rounded-lg text-sm text-center"></div>
+     <div class="flex gap-3">
+      <button onclick="closePasswordChangeModal()" class="flex-1 px-4 py-2 border border-slate-600 text-slate-300 hover:bg-slate-700 rounded-lg transition font-bold">Cancel</button> <button onclick="applyPasswordChange()" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg transition transform hover:scale-105">Update Password</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- RECEIPT MODAL -->
+  <div id="receiptModal" class="z-50 fixed inset-0 hidden bg-black/70 backdrop-blur flex items-center justify-center p-4">
+   <div class="bg-slate-800 rounded-2xl p-6 max-w-2xl w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
+    <h2 class="text-2xl font-bold text-white mb-4">Edit Receipt Details</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50">
+     <div>
+      <label class="text-slate-300 text-sm font-bold mb-2 block">Company Name</label> <input id="inputCompany" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition" placeholder="RJEZM DIGITAL">
+     </div>
+     <div>
+      <label class="text-slate-300 text-sm font-bold mb-2 block">Buyer Name</label> <input id="inputBuyer" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition" placeholder="Walk-in">
+     </div>
+    </div>
+    <div class="bg-slate-700/20 p-4 rounded-lg border border-slate-700/50 mb-4">
+     <div class="grid grid-cols-2 gap-4">
+      <div><label class="text-slate-300 text-sm font-bold mb-2 block">Tax (%)</label> <input id="inputTax" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition" value="0">
+      </div>
+      <div><label class="text-slate-300 text-sm font-bold mb-2 block">Total Cost</label> <input id="inputTotalCost" type="number" placeholder="From calculator" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition" step="0.01" disabled>
+      </div>
+     </div>
+    </div>
+    <h3 class="font-bold text-white mb-3">Items</h3>
+    <div class="grid grid-cols-3 gap-2 text-xs font-bold text-slate-300 mb-3 px-2">
+     <span>Name</span><span class="text-center">Qty</span><span class="text-right">Price</span>
+    </div>
+    <div id="itemInputs" class="space-y-2 mb-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50 max-h-64 overflow-y-auto"></div><button onclick="addReceiptItem()" class="text-cyan-400 hover:text-cyan-300 text-sm font-bold mb-4 transition">+ Add Item</button>
+    <div class="flex justify-end gap-3">
+     <button onclick="closeReceiptModal()" class="px-4 py-2 border border-slate-600 text-slate-300 hover:bg-slate-700 rounded-lg transition">Cancel</button> <button onclick="applyReceiptData()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-lg transition transform hover:scale-105">Apply</button>
+    </div>
+   </div>
+  </div><!-- STOCK UPDATE MODAL -->
+  <div id="stockUpdateModal" class="z-50 fixed inset-0 hidden bg-black/70 backdrop-blur flex items-center justify-center p-4">
+   <div class="bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-700">
+    <h2 class="text-2xl font-bold text-white mb-4">Update Stock Levels</h2>
+    <div class="space-y-4 bg-slate-700/20 p-4 rounded-lg border border-slate-700/50">
+     <div><label class="text-slate-300 text-sm font-bold mb-2 block">Cyan (ml)</label> <input type="number" id="update-c-stock" placeholder="0" step="0.1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div><label class="text-slate-300 text-sm font-bold mb-2 block">Magenta (ml)</label> <input type="number" id="update-m-stock" placeholder="0" step="0.1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div><label class="text-slate-300 text-sm font-bold mb-2 block">Yellow (ml)</label> <input type="number" id="update-y-stock" placeholder="0" step="0.1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div><label class="text-slate-300 text-sm font-bold mb-2 block">Black (ml)</label> <input type="number" id="update-k-stock" placeholder="0" step="0.1" class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition">
+     </div>
+    </div>
+    <div class="flex justify-end gap-3 mt-4">
+     <button onclick="closeStockUpdateModal()" class="px-4 py-2 border border-slate-600 text-slate-300 hover:bg-slate-700 rounded-lg transition">Cancel</button> <button onclick="applyManualStockUpdate()" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-lg transition transform hover:scale-105">Apply Update</button>
+    </div>
+   </div>
+  </div>
+  
+  <!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSA9E4nDca50a1WcmNLFLXudI-PCOfFbg",
+    authDomain: "rjezm-print-os.firebaseapp.com",
+    projectId: "rjezm-print-os",
+    storageBucket: "rjezm-print-os.firebasestorage.app",
+    messagingSenderId: "871926743321",
+    appId: "1:871926743321:web:1d46bf4351b497fd738588"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.firebaseApp = app;
+  window.firebaseAuth = auth;
+  window.firebaseDB = db;
+</script>
+  <script>
+    let currentUser = null;
+    let adminPassword = "lilastronaut";
+    let allData = {};
+    let materials = [], inkMaterials = [], costingItems = [], products = [];
+    let lastCalc = null, lastElecCost = 0, lastInkCost = 0;
+    let receiptItems = [];
+    let currentYield = {};
+    let inkCosts = { c: null, m: null, y: null, k: null };
+    let maxStockLevels = { c: 0, m: 0, y: 0, k: 0 };
+    let lastInkUsage = { c: 0, m: 0, y: 0, k: 0 };
+    let auditLog = [];
+
+    const printers = {
+      epsonL120: { c:6500, m:6500, y:6500, k:4000 },
+      epsonL3210: { c:7500, m:7500, y:7500, k:4500 },
+      epsonL3250: { c:7500, m:7500, y:7500, k:4500 },
+      epsonL5290: { c:7500, m:7500, y:7500, k:4500 },
+      epsonL805: { c:5400, m:5400, y:5400, k:1800 },
+      brotherT420: { c:5000, m:5000, y:5000, k:7500 },
+      brotherT520: { c:5000, m:5000, y:5000, k:7500 },
+      brotherT720: { c:5000, m:5000, y:5000, k:7500 },
+      brotherT820: { c:5000, m:5000, y:5000, k:7500 },
+      brotherT920: { c:5000, m:5000, y:5000, k:7500 }
+    };
+
+    function logAudit(action) {
+      const timestamp = new Date().toLocaleString();
+      auditLog.unshift({ timestamp, action });
+      if (auditLog.length > 100) auditLog.pop();
+      localStorage.setItem('rjezm_audit_log', JSON.stringify(auditLog));
+    }
+
+    async function initSDK() {
+      const handler = {
+        onDataChanged: (data) => {
+          allData = data;
+          refreshUserData();
+          updateUI();
+        }
+      };
+      const result = await window.dataSdk.init(handler);
+      if (result.isOk) {
+        console.log('Data SDK initialized');
+      }
+    }
+
+    function syncUsersToSDK() {
+      const localUsers = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      Object.keys(localUsers).forEach(email => {
+        const hasRecord = allData.some(r => r.data_type === 'user_account' && r.user_email === email);
+        if (!hasRecord) {
+          window.dataSdk.create({
+            user_email: email,
+            data_type: 'user_account',
+            user_password: localUsers[email].password
+          });
+        }
+      });
+    }
+
+    async function saveToSDK(dataType, record) {
+      if (!currentUser) return;
+      record.user_email = currentUser;
+      record.data_type = dataType;
+      const result = await window.dataSdk.create(record);
+      if (!result.isOk) console.error('Save error:', result.error);
+      return result;
+    }
+
+    async function deleteFromSDK(record) {
+      const result = await window.dataSdk.delete(record);
+      if (!result.isOk) console.error('Delete error:', result.error);
+      return result;
+    }
+
+    function refreshUserData() {
+      materials = [];
+      inkMaterials = [];
+      costingItems = [];
+      products = [];
+      allData.forEach(record => {
+        if (record.user_email !== currentUser) return;
+        if (record.data_type === 'material' && record.material_name) {
+          materials.push({ name: record.material_name, totalCost: record.total_cost, quantity: record.quantity, __backendId: record.__backendId });
+        } else if (record.data_type === 'ink' && record.ink_color) {
+          inkMaterials.push({ color: record.ink_color, totalCost: record.total_cost, mlPerBottle: record.quantity, qtyBottles: record.total_ml / record.quantity, totalMl: record.total_ml, __backendId: record.__backendId });
+        } else if (record.data_type === 'costing') {
+          costingItems.push({ type: record.costing_type, idx: record.costing_index, qty: record.costing_qty, __backendId: record.__backendId });
+        } else if (record.data_type === 'product') {
+          products.push({ name: record.product_name, qty: record.product_qty, cost: record.product_cost, selling: record.product_selling, __backendId: record.__backendId });
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initSDK();
+      syncUsersToSDK();
+      document.getElementById("receiptDate").innerText = new Date().toLocaleString();
+      auditLog = JSON.parse(localStorage.getItem('rjezm_audit_log') || '[]');
+      document.getElementById('admin-password-input')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyAdminPassword();
+      });
+    });
+
+    function switchToSignup() {
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('code-signup-form').classList.remove('hidden');
+      document.getElementById('login-error').classList.add('hidden');
+      document.getElementById('code-signup-error').classList.add('hidden');
+    }
+
+    function switchToLogin() {
+      document.getElementById('code-signup-form').classList.add('hidden');
+      document.getElementById('login-form').classList.remove('hidden');
+      document.getElementById('login-error').classList.add('hidden');
+      document.getElementById('code-signup-error').classList.add('hidden');
+    }
+
+    function openAdminModal() {
+      document.getElementById('admin-modal').classList.remove('hidden');
+      document.getElementById('admin-password-input').value = '';
+      document.getElementById('admin-modal-error').classList.add('hidden');
+      document.getElementById('admin-password-input').focus();
+    }
+
+    function closeAdminModal() {
+      document.getElementById('admin-modal').classList.add('hidden');
+      document.getElementById('admin-password-input').value = '';
+      document.getElementById('admin-modal-error').classList.add('hidden');
+    }
+
+    function verifyAdminPassword() {
+      const password = document.getElementById('admin-password-input').value;
+      const errorEl = document.getElementById('admin-modal-error');
+      if (password === adminPassword) {
+        closeAdminModal();
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        logAudit('Admin logged in');
+        loadAdminDashboard();
+      } else {
+        errorEl.textContent = 'Invalid password';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function switchAdminTab(tab) {
+      ['overview', 'users', 'codes', 'settings', 'audit'].forEach(t => {
+        document.getElementById(`admin-content-${t}`).classList.toggle('hidden', t !== tab);
+        document.getElementById(`admin-tab-${t}`).classList.toggle('tab-active', t === tab);
+        document.getElementById(`admin-tab-${t}`).classList.toggle('tab-inactive', t !== tab);
+      });
+      if (tab === 'users') loadUsersTab();
+      if (tab === 'codes') loadCodesTab();
+      if (tab === 'audit') loadAuditTab();
+    }
+
+    function loadAdminDashboard() {
+      loadOverviewTab();
+    }
+
+    function loadOverviewTab() {
+      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      const allCodes = allData.filter(r => r.data_type === 'registration_code');
+      const usedCodes = allCodes.filter(c => c.used).length;
+      const availableCodes = allCodes.length - usedCodes;
+      
+      let totalProducts = 0;
+      let totalRevenue = 0;
+      let activeUsersThisMonth = 0;
+      let newUsersThisMonth = 0;
+      let activeThisWeek = 0;
+      let idleUsers = 0;
+
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      Object.keys(users).forEach(email => {
+        const userProducts = allData.filter(r => r.user_email === email && r.data_type === 'product');
+        totalProducts += userProducts.length;
+        userProducts.forEach(p => {
+          totalRevenue += p.product_selling || 0;
+        });
+        activeUsersThisMonth++;
+      });
+
+      document.getElementById('stat-active-users').textContent = Object.keys(users).length;
+      document.getElementById('stat-total-codes').textContent = allCodes.length;
+      document.getElementById('stat-codes-used').textContent = usedCodes;
+      document.getElementById('stat-avg-products').textContent = Object.keys(users).length > 0 ? (totalProducts / Object.keys(users).length).toFixed(1) : '0';
+      document.getElementById('stat-total-revenue').textContent = '₱' + fmt(totalRevenue);
+
+      document.getElementById('code-status-used').textContent = usedCodes;
+      document.getElementById('code-status-available').textContent = availableCodes;
+      if (allCodes.length > 0) {
+        const usagePercent = (usedCodes / allCodes.length) * 100;
+        document.getElementById('code-usage-bar').style.width = usagePercent + '%';
+        document.getElementById('code-available-bar').style.width = (100 - usagePercent) + '%';
+      }
+
+      document.getElementById('active-this-week').textContent = activeThisWeek;
+      document.getElementById('idle-users').textContent = idleUsers;
+      document.getElementById('new-users-month').textContent = newUsersThisMonth;
+    }
+
+    function loadUsersTab() {
+      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      const searchTerm = document.getElementById('user-search').value.toLowerCase();
+      const list = document.getElementById('users-detail-list');
+
+      const filteredUsers = Object.keys(users).filter(email => email.toLowerCase().includes(searchTerm));
+
+      if (filteredUsers.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-center py-8">No users found.</p>';
+        return;
+      }
+
+      list.innerHTML = filteredUsers.map(email => {
+        const userProducts = allData.filter(r => r.user_email === email && r.data_type === 'product').length;
+        const userMaterials = allData.filter(r => r.user_email === email && r.data_type === 'material').length;
+        const userInks = allData.filter(r => r.user_email === email && r.data_type === 'ink').length;
+        const totalRevenue = allData.filter(r => r.user_email === email && r.data_type === 'product').reduce((sum, p) => sum + (p.product_selling || 0), 0);
+        
+        // Find user's registration code
+        const userCodeRecord = allData.find(r => r.data_type === 'registration_code' && r.used_by === email);
+        const userCode = userCodeRecord ? userCodeRecord.code : 'N/A';
+
+        return `
+          <div class="bg-slate-700/40 rounded-lg p-4 border border-slate-600/50 card-hover">
+            <div class="flex justify-between items-start gap-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <h4 class="text-white font-bold text-lg">👤 ${email}</h4>
+                  <span class="text-xs font-mono bg-purple-500/30 text-purple-300 px-2 py-1 rounded border border-purple-500/50">Code: ${userCode}</span>
+                </div>
+                <p class="text-slate-400 text-xs mb-3">📧 ${email}</p>
+                <div class="grid grid-cols-4 gap-3 mt-3">
+                  <div class="bg-slate-700/30 rounded p-2 text-center">
+                    <p class="text-slate-400 text-xs font-bold">Products</p>
+                    <p class="text-white font-bold text-lg">${userProducts}</p>
+                  </div>
+                  <div class="bg-slate-700/30 rounded p-2 text-center">
+                    <p class="text-slate-400 text-xs font-bold">Materials</p>
+                    <p class="text-white font-bold text-lg">${userMaterials}</p>
+                  </div>
+                  <div class="bg-slate-700/30 rounded p-2 text-center">
+                    <p class="text-slate-400 text-xs font-bold">Inks</p>
+                    <p class="text-white font-bold text-lg">${userInks}</p>
+                  </div>
+                  <div class="bg-slate-700/30 rounded p-2 text-center">
+                    <p class="text-slate-400 text-xs font-bold">Revenue</p>
+                    <p class="text-white font-bold text-lg">₱${fmt(totalRevenue)}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 flex-shrink-0">
+                <button onclick="copyUserCode('${userCode}')" class="bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 px-3 py-1 rounded text-xs font-bold transition">📋 Copy Code</button>
+                <button onclick="deleteUser('${email}')" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-1 rounded text-xs font-bold transition">🗑️ Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copyUserCode(code) {
+      if (code === 'N/A') {
+        showNotification('No registration code found for this user', 'error');
+        return;
+      }
+      navigator.clipboard.writeText(code).then(() => {
+        showNotification(`✅ Copied code: ${code}`, 'success');
+      }).catch(() => {
+        showNotification('Failed to copy code', 'error');
+      });
+    }
+
+    function loadCodesTab() {
+      const allCodes = allData.filter(r => r.data_type === 'registration_code');
+      const codesList = document.getElementById('codes-list');
+
+      if (allCodes.length === 0) {
+        codesList.innerHTML = '<p class="text-slate-500 text-center py-6">No codes generated yet.</p>';
+        document.getElementById('codes-count').textContent = '0 codes';
+        return;
+      }
+
+      const availableCodes = allCodes.filter(c => !c.used);
+      const usedCodes = allCodes.filter(c => c.used);
+
+      codesList.innerHTML = [
+        ...availableCodes.map(codeRecord => `
+          <div class="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg p-3 border border-green-500/50 flex justify-between items-start gap-2 card-hover">
+            <div>
+              <p class="text-green-300 font-bold font-mono text-sm">${codeRecord.code}</p>
+              <p class="text-green-400/80 text-xs">🟢 Available</p>
+            </div>
+            <button onclick="deleteCode('${codeRecord.code}')" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold transition flex-shrink-0">✕</button>
+          </div>
+        `),
+        ...usedCodes.map(codeRecord => `
+          <div class="bg-gradient-to-r from-slate-700/40 to-slate-600/20 rounded-lg p-3 border border-slate-600/50 flex justify-between items-start gap-2">
+            <div>
+              <p class="text-slate-400 font-bold font-mono text-sm">${codeRecord.code}</p>
+              <p class="text-slate-500 text-xs">✅ Used by ${codeRecord.used_by}</p>
+            </div>
+            <button onclick="deleteCode('${codeRecord.code}')" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold transition flex-shrink-0">✕</button>
+          </div>
+        `)
+      ].join('');
+
+      document.getElementById('codes-count').textContent = `${availableCodes.length} available, ${usedCodes.length} used`;
+    }
+
+    function loadAuditTab() {
+      const list = document.getElementById('audit-log-list');
+      if (auditLog.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-center py-8">No audit logs yet.</p>';
+        return;
+      }
+
+      list.innerHTML = auditLog.map((log, idx) => `
+        <div class="bg-slate-700/30 rounded p-2 border border-slate-700/50">
+          <p class="text-slate-300 text-xs"><span class="text-amber-400 font-bold">${log.timestamp}</span> • ${log.action}</p>
+        </div>
+      `).join('');
+    }
+
+    async function generateCodes() {
+      const num = parseInt(document.getElementById('num-codes').value) || 5;
+      const newCodes = [];
+      for (let i = 0; i < num; i++) {
+        const code = 'RJZ' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        newCodes.push(code);
+        await window.dataSdk.create({
+          user_email: 'admin',
+          data_type: 'registration_code',
+          code: code,
+          used: false,
+          used_by: '',
+          created_at: new Date().toISOString(),
+          used_at: ''
+        });
+      }
+      logAudit(`Generated ${num} registration codes`);
+      showNotification(`Generated ${newCodes.length} codes!`, "success");
+      loadCodesTab();
+      loadOverviewTab();
+    }
+
+    async function deleteCode(code) {
+      if (confirm('Delete this code?')) {
+        const codeRecord = allData.find(r => r.data_type === 'registration_code' && r.code === code);
+        if (codeRecord) {
+          await window.dataSdk.delete(codeRecord);
+          logAudit(`Deleted code: ${code}`);
+          loadCodesTab();
+          loadOverviewTab();
+          showNotification('Code deleted', "success");
+        }
+      }
+    }
+
+    async function deleteUser(email) {
+      if (confirm(`Delete user ${email} and all their data?`)) {
+        const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+        delete users[email];
+        localStorage.setItem('rjezm_users', JSON.stringify(users));
+
+        const userRecords = allData.filter(r => r.user_email === email);
+        for (const record of userRecords) {
+          await window.dataSdk.delete(record);
+        }
+
+        logAudit(`Deleted user: ${email}`);
+        showNotification('User deleted', "success");
+        loadUsersTab();
+        loadOverviewTab();
+      }
+    }
+
+    async function changeAdminPassword() {
+      const currentPass = document.getElementById('admin-current-pass').value;
+      const newPass = document.getElementById('admin-new-pass').value;
+      const msgEl = document.getElementById('admin-pass-message');
+
+      if (currentPass !== adminPassword) {
+        msgEl.textContent = 'Current password is incorrect';
+        msgEl.className = 'bg-red-500/20 border border-red-500/50 text-red-300';
+        msgEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!newPass || newPass.length < 6) {
+        msgEl.textContent = 'New password must be at least 6 characters';
+        msgEl.className = 'bg-red-500/20 border border-red-500/50 text-red-300';
+        msgEl.classList.remove('hidden');
+        return;
+      }
+
+      adminPassword = newPass;
+      msgEl.textContent = '✅ Admin password updated successfully!';
+      msgEl.className = 'bg-green-500/20 border border-green-500/50 text-green-300';
+      msgEl.classList.remove('hidden');
+      logAudit('Admin password changed');
+      document.getElementById('admin-current-pass').value = '';
+      document.getElementById('admin-new-pass').value = '';
+    }
+
+    async function recoverUserAccount() {
+      const email = document.getElementById('recovery-email').value.trim();
+      const newPassword = document.getElementById('recovery-password').value.trim();
+      
+      if (!email || !newPassword) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      users[email] = { password: newPassword };
+      localStorage.setItem('rjezm_users', JSON.stringify(users));
+
+      const existingRecord = allData.find(r => r.data_type === 'user_account' && r.user_email === email);
+      if (existingRecord) {
+        await window.dataSdk.update({
+          ...existingRecord,
+          user_password: newPassword
+        });
+      } else {
+        await window.dataSdk.create({
+          user_email: email,
+          data_type: 'user_account',
+          user_password: newPassword
+        });
+      }
+
+      document.getElementById('recovery-email').value = '';
+      document.getElementById('recovery-password').value = '';
+      logAudit(`Recovered account: ${email}`);
+      showNotification(`✅ Account recovered for ${email}!`, 'success');
+    }
+
+    function saveBrandingSettings() {
+      const company = document.getElementById('company-name').value || 'RJEZM DIGITAL';
+      const tagline = document.getElementById('company-tagline').value || 'Professional Print Solutions';
+      
+      localStorage.setItem('rjezm_company_name', company);
+      localStorage.setItem('rjezm_company_tagline', tagline);
+      
+      document.getElementById('companyName').textContent = company;
+      logAudit(`Updated branding: ${company}`);
+      showNotification('✅ Branding settings saved!', 'success');
+    }
+
+    function clearAuditLog() {
+      if (confirm('Clear all audit logs?')) {
+        auditLog = [];
+        localStorage.setItem('rjezm_audit_log', JSON.stringify(auditLog));
+        loadAuditTab();
+        logAudit('Audit log cleared');
+        showNotification('Audit log cleared', 'success');
+      }
+    }
+
+    function handleAdminLogout() {
+      logAudit('Admin logged out');
+      document.getElementById('admin-screen').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const errorEl = document.getElementById('login-error');
+      if (!email || !password) {
+        errorEl.textContent = 'Please fill in all fields';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      if (users[email] && users[email].password === password) {
+        currentUser = email;
+        refreshUserData();
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        document.getElementById('user-email').textContent = email;
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-password').value = '';
+        updateUI();
+      } else {
+        errorEl.textContent = 'Invalid email or password';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function handleCodeSignup() {
+      const email = document.getElementById('code-email').value.trim();
+      const password = document.getElementById('code-password').value.trim();
+      const code = document.getElementById('code-input').value.trim().toUpperCase();
+      const errorEl = document.getElementById('code-signup-error');
+
+      if (!email || !password || !code) {
+        errorEl.textContent = 'Please fill in all fields';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (password.length < 6) {
+        errorEl.textContent = 'Password must be at least 6 characters';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      if (users[email]) {
+        errorEl.textContent = 'Email already registered';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      let codeRecord = allData.find(r => r.data_type === 'registration_code' && r.code === code && !r.used);
+      
+      if (!codeRecord) {
+        const existingCode = allData.find(r => r.data_type === 'registration_code' && r.code === code);
+        if (existingCode && existingCode.used) {
+          errorEl.textContent = 'This code has already been used';
+        } else {
+          errorEl.textContent = 'Invalid registration code';
+        }
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      const updatedCode = { ...codeRecord, used: true, used_by: email, used_at: new Date().toISOString() };
+      const updateResult = await window.dataSdk.update(updatedCode);
+
+      if (!updateResult.isOk) {
+        errorEl.textContent = 'Error processing code. Please try again.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      users[email] = { password };
+      localStorage.setItem('rjezm_users', JSON.stringify(users));
+
+      await window.dataSdk.create({
+        user_email: email,
+        data_type: 'user_account',
+        user_password: password
+      });
+
+      currentUser = email;
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('user-email').textContent = email;
+      document.getElementById('code-email').value = '';
+      document.getElementById('code-password').value = '';
+      document.getElementById('code-input').value = '';
+      updateUI();
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById('app-screen').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('code-email').value = '';
+      document.getElementById('code-password').value = '';
+      document.getElementById('code-input').value = '';
+    }
+
+    function showNotification(message, type) {
+      const isError = type === "error";
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg text-sm font-bold z-50 ${isError ? 'bg-red-500/30 border border-red-500/50 text-red-300' : 'bg-green-500/30 border border-green-500/50 text-green-300'}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    }
+
+    function openPasswordChangeModal() {
+      document.getElementById('passwordChangeModal').classList.remove('hidden');
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      document.getElementById('password-change-error').classList.add('hidden');
+      document.getElementById('password-change-success').classList.add('hidden');
+    }
+
+    function closePasswordChangeModal() {
+      document.getElementById('passwordChangeModal').classList.add('hidden');
+    }
+
+    async function applyPasswordChange() {
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const errorEl = document.getElementById('password-change-error');
+      const successEl = document.getElementById('password-change-success');
+
+      errorEl.classList.add('hidden');
+      successEl.classList.add('hidden');
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        errorEl.textContent = 'All fields are required';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      if (!users[currentUser] || users[currentUser].password !== currentPassword) {
+        errorEl.textContent = 'Current password is incorrect';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        errorEl.textContent = 'New password must be at least 6 characters';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        errorEl.textContent = 'Passwords do not match';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      users[currentUser].password = newPassword;
+      localStorage.setItem('rjezm_users', JSON.stringify(users));
+
+      const userRecord = allData.find(r => r.data_type === 'user_account' && r.user_email === currentUser);
+      if (userRecord) {
+        await window.dataSdk.update({
+          ...userRecord,
+          user_password: newPassword
+        });
+      }
+
+      successEl.textContent = '✅ Password changed successfully!';
+      successEl.classList.remove('hidden');
+      setTimeout(() => {
+        closePasswordChangeModal();
+      }, 2000);
+    }
+
+    function updateUI() {
+      renderInkMaterials();
+      renderMaterials();
+      renderCosting();
+      renderProducts();
+      updateMaterialSelect();
+      updateInkCosts();
+      updateStats();
+      updateInkLevels();
+    }
+
+    function switchTab(tab) {
+      ['inventory', 'costing', 'cmyk', 'calculator', 'products', 'receipt'].forEach(t => {
+        document.getElementById(`content-${t}`).classList.toggle('hidden', t !== tab);
+        document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === tab);
+        document.getElementById(`tab-${t}`).classList.toggle('tab-inactive', t !== tab);
+      });
+    }
+
+    function fmt(n) { return parseFloat(n || 0).toFixed(2); }
+
+    function updateStats() {
+      document.getElementById('stat-materials').textContent = materials.length + inkMaterials.length;
+      document.getElementById('stat-costing').textContent = costingItems.length;
+      document.getElementById('stat-products').textContent = products.length;
+      const totalRevenue = products.reduce((sum, p) => sum + (p.selling || 0), 0);
+      document.getElementById('stat-revenue').textContent = '₱' + fmt(totalRevenue);
+    }
+
+    async function addInkMaterial() {
+      const color = document.getElementById('ink-color').value;
+      const totalCost = parseFloat(document.getElementById('ink-total-cost').value) || 0;
+      const mlPerBottle = parseFloat(document.getElementById('ink-ml-bottle').value) || 0;
+      const qtyBottles = parseFloat(document.getElementById('ink-qty-bottles').value) || 1;
+      if (!color || totalCost <= 0 || mlPerBottle <= 0 || qtyBottles <= 0) return;
+      const totalMl = mlPerBottle * qtyBottles;
+      await saveToSDK('ink', { ink_color: color, total_cost: totalCost, quantity: mlPerBottle, total_ml: totalMl });
+      document.getElementById('ink-form').reset();
+      document.getElementById('ink-qty-bottles').value = 1;
+    }
+
+    function renderInkMaterials() {
+      const list = document.getElementById('ink-list');
+      if (inkMaterials.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-center py-6">No ink materials added yet.</p>';
+        return;
+      }
+      list.innerHTML = inkMaterials.map((ink, idx) => {
+        const costPerMl = ink.totalCost / ink.totalMl;
+        const currentStock = parseFloat(document.getElementById(`${ink.color.toLowerCase().charAt(0)}Stock-display`)?.textContent || 0);
+        const stockStatus = currentStock <= (ink.totalMl * 0.2) ? '⚠️ Low Stock' : '✅ Good Stock';
+        const stockStatusColor = currentStock <= (ink.totalMl * 0.2) ? 'bg-red-500/30 text-red-300' : 'bg-green-500/30 text-green-300';
+        return `
+          <div class="bg-gradient-to-r from-slate-700/40 to-slate-600/20 rounded-lg p-3 border border-slate-600/50 card-hover">
+            <div class="flex justify-between items-start gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h4 class="text-white font-bold text-base">🎨 ${ink.color}</h4>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full ${stockStatusColor} whitespace-nowrap">${stockStatus}</span>
+                </div>
+                <p class="text-slate-400 text-xs leading-tight">💰 ₱${fmt(ink.totalCost)} | 📦 ${ink.mlPerBottle}ml/bottle | 🔢 ${ink.qtyBottles}x | 📊 ${ink.totalMl}ml | ₱${fmt(costPerMl)}/ml</p>
+              </div>
+              <div class="flex gap-1 flex-shrink-0"><button onclick="deleteInkMaterial(${idx})" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold transition">✕</button></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function deleteInkMaterial(idx) {
+      const record = inkMaterials[idx];
+      if (record.__backendId) await deleteFromSDK(record);
+    }
+
+    function updateInkCosts() {
+      const colorMap = { c: 'Cyan', m: 'Magenta', y: 'Yellow', k: 'Black' };
+      const colorIds = { c: 'cCost', m: 'mCost', y: 'yCost', k: 'kCost' };
+      let allInksFound = true;
+      ['c', 'm', 'y', 'k'].forEach(color => {
+        const ink = inkMaterials.find(i => i.color.toLowerCase() === colorMap[color].toLowerCase());
+        if (ink) {
+          const costPerMl = ink.totalCost / ink.totalMl;
+          inkCosts[color] = costPerMl;
+          document.getElementById(`${colorIds[color]}-display`).textContent = '₱' + fmt(costPerMl);
+          document.getElementById(`${colorIds[color]}-label`).textContent = `${ink.color} (₱${fmt(costPerMl)}/ml)`;
+          maxStockLevels[color] = ink.totalMl;
+          document.getElementById(`${color}Stock-display`).textContent = ink.totalMl.toFixed(1);
+          updateInkLevels();
+        } else {
+          inkCosts[color] = null;
+          document.getElementById(`${colorIds[color]}-display`).textContent = '—';
+          document.getElementById(`${colorIds[color]}-label`).textContent = 'Add to inventory';
+          allInksFound = false;
+        }
+      });
+      const statusEl = document.getElementById('ink-inventory-status');
+      if (allInksFound) {
+        statusEl.innerHTML = '✅ All Inks Ready';
+        statusEl.className = 'text-xs font-bold px-2 py-1 rounded-full bg-green-500/30 text-green-300';
+      } else {
+        statusEl.innerHTML = '⚠️ Add Missing Inks';
+        statusEl.className = 'text-xs font-bold px-2 py-1 rounded-full bg-red-500/30 text-red-300';
+      }
+    }
+
+    function renderMaterials() {
+      const list = document.getElementById('material-list');
+      if (materials.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-center py-6">No materials added yet.</p>';
+        return;
+      }
+      list.innerHTML = materials.map((m, idx) => `
+        <div class="bg-gradient-to-r from-slate-700/40 to-slate-600/20 rounded-lg p-3 border border-slate-600/50 card-hover flex justify-between items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <h4 class="text-white font-bold text-base">${m.name}</h4>
+            <p class="text-slate-400 text-xs mt-1">💰 ₱${fmt(m.totalCost)} | 📦 ${m.quantity} pcs | ₱${fmt(m.totalCost/m.quantity)}/pcs</p>
+          </div>
+          <button onclick="deleteMaterial(${idx})" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold transition flex-shrink-0">✕</button>
+        </div>
+      `).join('');
+    }
+
+    async function addMaterial() {
+      const name = document.getElementById('material-name').value.trim();
+      const cost = parseFloat(document.getElementById('material-cost').value) || 0;
+      const qty = parseFloat(document.getElementById('material-qty').value) || 0;
+      if (!name || cost <= 0 || qty <= 0) return;
+      await saveToSDK('material', { material_name: name, total_cost: cost, quantity: qty });
+      document.getElementById('material-form').reset();
+    }
+
+    async function deleteMaterial(idx) {
+      const record = materials[idx];
+      if (record.__backendId) await deleteFromSDK(record);
+    }
+
+    function updateMaterialSelect() {
+      const sel = document.getElementById('costing-material');
+      const allMaterials = [
+        ...materials.map((m, idx) => ({ name: m.name, idx, type: 'general', costPerUnit: m.totalCost/m.quantity })),
+        ...inkMaterials.map((i, idx) => ({ name: `${i.color} Ink`, idx, type: 'ink', costPerUnit: i.totalCost/i.totalMl }))
+      ];
+      sel.innerHTML = '<option value="">-- Select a material --</option>' + allMaterials.map(m => `<option value="${m.type}-${m.idx}">${m.name} (₱${fmt(m.costPerUnit)}/unit)</option>`).join('');
+    }
+
+    function updateQualityLabel() {
+      const mult = parseFloat(document.getElementById('ink-quality-mult').value);
+      document.getElementById('quality-display').textContent = mult.toFixed(1);
+      let label = 'Standard';
+      if (mult >= 4.5) label = 'Maximum';
+      else if (mult >= 3.5) label = 'Premium';
+      else if (mult >= 2.5) label = 'High';
+      else if (mult >= 1.5) label = 'Good';
+      document.getElementById('quality-label').textContent = label;
+    }
+
+    async function addCosting() {
+      const val = document.getElementById('costing-material').value;
+      const qty = parseFloat(document.getElementById('costing-qty').value) || 0;
+      if (val === '' || qty <= 0) return;
+      const [type, idx] = val.split('-');
+      await saveToSDK('costing', { costing_type: type, costing_index: parseInt(idx), costing_qty: qty });
+      document.getElementById('costing-material').value = '';
+      document.getElementById('costing-qty').value = '';
+    }
+
+    function renderCosting() {
+      const list = document.getElementById('costing-list');
+      const total = document.getElementById('costing-total');
+      if (costingItems.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-center py-6">No materials added to costing yet.</p>';
+        total.classList.add('hidden');
+        return;
+      }
+      let sum = 0;
+      list.innerHTML = costingItems.map((c, idx) => {
+        let mat, costPerUnit;
+        if (c.type === 'general') {
+          mat = materials[c.idx];
+          costPerUnit = mat ? mat.totalCost / mat.quantity : 0;
+        } else {
+          mat = inkMaterials[c.idx];
+          costPerUnit = mat ? mat.totalCost / mat.totalMl : 0;
+        }
+        const cost = costPerUnit * c.qty;
+        sum += cost;
+        const matName = c.type === 'general' ? mat?.name : `${mat?.color} Ink`;
+        return `<div class="bg-slate-700/40 rounded-lg p-2 flex justify-between items-center border border-slate-600/30 card-hover text-sm">
+            <div><p class="text-white font-semibold">${matName || 'Unknown'}</p>
+              <p class="text-slate-400 text-xs">Qty: ${c.qty} | ₱${fmt(cost)}</p></div>
+            <button onclick="deleteCosting(${idx})" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0">✕</button>
+          </div>`;
+      }).join('');
+      total.classList.remove('hidden');
+      document.getElementById('costing-total-value').textContent = '₱' + fmt(sum);
+    }
+
+    async function deleteCosting(idx) {
+      const record = costingItems[idx];
+      if (record.__backendId) await deleteFromSDK(record);
+    }
+
+    function calculateElectricity() {
+      const power = parseFloat(document.getElementById('elec-power').value) || 0;
+      const rate = parseFloat(document.getElementById('elec-rate').value) || 0;
+      const runtime = parseFloat(document.getElementById('elec-runtime').value) || 1;
+      const numJobs = parseFloat(document.getElementById('elec-num-jobs').value) || 1;
+      const kwhPerJob = (power / 1000) * (runtime / 60);
+      const costPerJob = kwhPerJob * rate;
+      const totalCost = costPerJob * numJobs;
+      lastElecCost = costPerJob;
+      document.getElementById('elec-cost-per-job').textContent = '₱' + fmt(costPerJob);
+      document.getElementById('elec-total-cost').textContent = '₱' + fmt(totalCost);
+      document.getElementById('elec-breakdown').classList.remove('hidden');
+    }
+
+    function loadPrinterYield() {
+      const printer = document.getElementById('printerSelect').value;
+      currentYield = printers[printer] || {};
+    }
+
+    function calculateCMYK() {
+      if (!currentYield.c) { alert('Select printer first'); return; }
+      const pages = parseFloat(document.getElementById('pages').value) || 100;
+      const coverage = parseFloat(document.getElementById('coverage').value) / 100 || 0.05;
+      const waste = parseFloat(document.getElementById('waste').value) / 100 || 0.03;
+      const qualityMult = parseFloat(document.getElementById('ink-quality-mult').value) || 1;
+      const cCost = inkCosts.c; const mCost = inkCosts.m; const yCost = inkCosts.y; const kCost = inkCosts.k;
+      if (!cCost || !mCost || !yCost || !kCost) { alert('Add all inks to inventory'); return; }
+      const cStock = parseFloat(document.getElementById('cStock-display').textContent) || 0;
+      const mStock = parseFloat(document.getElementById('mStock-display').textContent) || 0;
+      const yStock = parseFloat(document.getElementById('yStock-display').textContent) || 0;
+      const kStock = parseFloat(document.getElementById('kStock-display').textContent) || 0;
+      const mlPerPage = 0.1;
+      const cUsed = pages * mlPerPage * coverage * qualityMult * (1 + waste);
+      const mUsed = pages * mlPerPage * coverage * qualityMult * (1 + waste);
+      const yUsed = pages * mlPerPage * coverage * qualityMult * (1 + waste);
+      const kUsed = pages * mlPerPage * 0.2 * qualityMult * (1 + waste);
+      const cCostTotal = cUsed * cCost;
+      const mCostTotal = mUsed * mCost;
+      const yCostTotal = yUsed * yCost;
+      const kCostTotal = kUsed * kCost;
+      const total = cCostTotal + mCostTotal + yCostTotal + kCostTotal;
+      lastInkCost = total;
+      lastInkUsage = { c: cUsed, m: mUsed, y: yUsed, k: kUsed };
+      document.getElementById('cmyk-c-cost').textContent = '₱' + fmt(cCostTotal);
+      document.getElementById('cmyk-m-cost').textContent = '₱' + fmt(mCostTotal);
+      document.getElementById('cmyk-y-cost').textContent = '₱' + fmt(yCostTotal);
+      document.getElementById('cmyk-k-cost').textContent = '₱' + fmt(kCostTotal);
+      document.getElementById('cmyk-total-cost').textContent = '₱' + fmt(total);
+      const newCStock = cStock - cUsed;
+      const newMStock = mStock - mUsed;
+      const newYStock = yStock - yUsed;
+      const newKStock = kStock - kUsed;
+      document.getElementById('stock-c').textContent = fmt(newCStock);
+      document.getElementById('stock-m').textContent = fmt(newMStock);
+      document.getElementById('stock-y').textContent = fmt(newYStock);
+      document.getElementById('stock-k').textContent = fmt(newKStock);
+      document.getElementById('calc-total-ink').textContent = '₱' + fmt(total);
+      document.getElementById('cmyk-result').classList.remove('hidden');
+    }
+
+    function applyAutomaticStockUpdate() {
+      const cStock = parseFloat(document.getElementById('cStock-display').textContent) || 0;
+      const mStock = parseFloat(document.getElementById('mStock-display').textContent) || 0;
+      const yStock = parseFloat(document.getElementById('yStock-display').textContent) || 0;
+      const kStock = parseFloat(document.getElementById('kStock-display').textContent) || 0;
+      const newCStock = cStock - lastInkUsage.c;
+      const newMStock = mStock - lastInkUsage.m;
+      const newYStock = yStock - lastInkUsage.y;
+      const newKStock = kStock - lastInkUsage.k;
+      document.getElementById('cStock-display').textContent = Math.max(0, newCStock).toFixed(1);
+      document.getElementById('mStock-display').textContent = Math.max(0, newMStock).toFixed(1);
+      document.getElementById('yStock-display').textContent = Math.max(0, newYStock).toFixed(1);
+      document.getElementById('kStock-display').textContent = Math.max(0, newKStock).toFixed(1);
+      updateInkLevels();
+    }
+
+    function updateInkLevels() {
+      const c = parseFloat(document.getElementById('cStock-display').textContent) || 0;
+      const m = parseFloat(document.getElementById('mStock-display').textContent) || 0;
+      const y = parseFloat(document.getElementById('yStock-display').textContent) || 0;
+      const k = parseFloat(document.getElementById('kStock-display').textContent) || 0;
+      document.getElementById('cyan-level').style.height = (maxStockLevels.c > 0 ? c / maxStockLevels.c * 100 : 0) + '%';
+      document.getElementById('magenta-level').style.height = (maxStockLevels.m > 0 ? m / maxStockLevels.m * 100 : 0) + '%';
+      document.getElementById('yellow-level').style.height = (maxStockLevels.y > 0 ? y / maxStockLevels.y * 100 : 0) + '%';
+      document.getElementById('black-level').style.height = (maxStockLevels.k > 0 ? k / maxStockLevels.k * 100 : 0) + '%';
+    }
+
+    function openStockUpdateModal() {
+      document.getElementById('stockUpdateModal').classList.remove('hidden');
+      document.getElementById('update-c-stock').value = parseFloat(document.getElementById('cStock-display').textContent) || 0;
+      document.getElementById('update-m-stock').value = parseFloat(document.getElementById('mStock-display').textContent) || 0;
+      document.getElementById('update-y-stock').value = parseFloat(document.getElementById('yStock-display').textContent) || 0;
+      document.getElementById('update-k-stock').value = parseFloat(document.getElementById('kStock-display').textContent) || 0;
+    }
+
+    function closeStockUpdateModal() {
+      document.getElementById('stockUpdateModal').classList.add('hidden');
+    }
+
+    function applyManualStockUpdate() {
+      const c = parseFloat(document.getElementById('update-c-stock').value) || 0;
+      const m = parseFloat(document.getElementById('update-m-stock').value) || 0;
+      const y = parseFloat(document.getElementById('update-y-stock').value) || 0;
+      const k = parseFloat(document.getElementById('update-k-stock').value) || 0;
+      document.getElementById('cStock-display').textContent = c.toFixed(1);
+      document.getElementById('mStock-display').textContent = m.toFixed(1);
+      document.getElementById('yStock-display').textContent = y.toFixed(1);
+      document.getElementById('kStock-display').textContent = k.toFixed(1);
+      updateInkLevels();
+      closeStockUpdateModal();
+    }
+
+    function performCalculation() {
+      const name = document.getElementById('product-name').value.trim();
+      const qty = parseFloat(document.getElementById('product-qty').value) || 1;
+      const labor = parseFloat(document.getElementById('labor-cost').value) || 0;
+      const overhead = parseFloat(document.getElementById('overhead-cost').value) || 0;
+      const machine = parseFloat(document.getElementById('machine-cost').value) || 0;
+      const taxRate = parseFloat(document.getElementById('tax-rate').value) / 100 || 0;
+      const profitMargin = parseFloat(document.getElementById('profit-margin').value) / 100 || 0.3;
+      let materialCost = 0;
+      costingItems.forEach(c => {
+        let mat, costPerUnit;
+        if (c.type === 'general') {
+          mat = materials[c.idx];
+          costPerUnit = mat ? mat.totalCost / mat.quantity : 0;
+        } else {
+          mat = inkMaterials[c.idx];
+          costPerUnit = mat ? mat.totalCost / mat.totalMl : 0;
+        }
+        materialCost += costPerUnit * c.qty;
+      });
+      const subtotal = materialCost + labor + overhead + machine + lastInkCost + lastElecCost;
+      const tax = subtotal * taxRate;
+      const totalCost = subtotal + tax;
+      const costPerUnit = totalCost / qty;
+      const sellingPrice = totalCost * (1 + profitMargin);
+      const pricePerUnit = sellingPrice / qty;
+      lastCalc = { name, qty, totalCost, costPerUnit, sellingPrice, pricePerUnit, material: materialCost, labor, overhead, machine, ink: lastInkCost, electricity: lastElecCost, subtotal, tax };
+      document.getElementById('bd-material').textContent = '₱' + fmt(materialCost);
+      document.getElementById('bd-labor').textContent = '₱' + fmt(labor);
+      document.getElementById('bd-overhead').textContent = '₱' + fmt(overhead);
+      document.getElementById('bd-machine').textContent = '₱' + fmt(machine);
+      document.getElementById('bd-ink').textContent = '₱' + fmt(lastInkCost);
+      document.getElementById('bd-electricity').textContent = '₱' + fmt(lastElecCost);
+      document.getElementById('bd-subtotal').textContent = '₱' + fmt(subtotal);
+      document.getElementById('bd-tax').textContent = '₱' + fmt(tax);
+      document.getElementById('bd-total-cost').textContent = '₱' + fmt(totalCost);
+      document.getElementById('bd-per-unit').textContent = '₱' + fmt(costPerUnit);
+      document.getElementById('bd-selling-price').textContent = '₱' + fmt(sellingPrice);
+      document.getElementById('bd-price-per-unit').textContent = '₱' + fmt(pricePerUnit);
+      document.getElementById('breakdown-section').classList.remove('hidden');
+    }
+
+    async function saveProduct() {
+      if (!lastCalc) return;
+      await saveToSDK('product', { product_name: lastCalc.name, product_qty: lastCalc.qty, product_cost: lastCalc.totalCost, product_selling: lastCalc.sellingPrice });
+    }
+
+    function renderProducts() {
+      const list = document.getElementById('products-list');
+      if (products.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-center py-8">No products saved yet.</p>';
+        return;
+      }
+      list.innerHTML = products.map((p, idx) => `
+        <div class="bg-gradient-to-r from-slate-700/40 to-slate-600/20 rounded-lg p-3 border border-slate-600/50 card-hover flex justify-between items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <h4 class="text-white font-bold text-base">${p.name}</h4>
+            <p class="text-slate-400 text-xs mt-1">📦 Qty: ${p.qty} | 💰 Cost: ₱${fmt(p.cost)} | 🔖 Sell: ₱${fmt(p.selling)} | 📈 Profit: ₱${fmt(p.selling - p.cost)}</p>
+          </div>
+          <button onclick="deleteProduct(${idx})" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold flex-shrink-0">✕</button>
+        </div>
+      `).join('');
+    }
+
+    async function deleteProduct(idx) {
+      const record = products[idx];
+      if (record.__backendId) await deleteFromSDK(record);
+    }
+
+    function goToReceiptPrinter() {
+      switchTab('receipt');
+    }
+
+    function openReceiptModal() {
+      document.getElementById('receiptModal').classList.remove('hidden');
+      document.getElementById('inputCompany').value = document.getElementById('companyName').textContent;
+      document.getElementById('inputBuyer').value = document.getElementById('buyerName').textContent;
+      document.getElementById('itemInputs').innerHTML = '';
+      if (lastCalc) {
+        const taxAmount = lastCalc.tax;
+        const costAmount = lastCalc.totalCost;
+        document.getElementById('inputTotalCost').value = costAmount.toFixed(2);
+        document.getElementById('itemInputs').innerHTML += `<div class="grid grid-cols-3 gap-2"><input type="text" value="${lastCalc.name}" placeholder="Item name" class="col-span-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-white text-sm"><input type="number" value="${lastCalc.qty}" placeholder="Qty" class="col-span-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-white text-sm" readonly style="opacity: 0.6;"><input type="number" value="${lastCalc.costPerUnit.toFixed(2)}" placeholder="Price" class="col-span-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-white text-sm"></div>`;
+      }
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.add('hidden');
+    }
+
+    function addReceiptItem() {
+      const div = document.createElement('div');
+      div.className = 'grid grid-cols-3 gap-2';
+      div.innerHTML = '<input type="text" placeholder="Item name" class="col-span-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-white text-sm"><input type="number" placeholder="Qty" class="col-span-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-white text-sm"><input type="number" placeholder="Price" class="col-span-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-white text-sm">';
+      document.getElementById('itemInputs').appendChild(div);
+    }
+
+    function applyReceiptData() {
+      document.getElementById('companyName').textContent = document.getElementById('inputCompany').value || 'RJEZM DIGITAL';
+      document.getElementById('buyerName').textContent = document.getElementById('inputBuyer').value || 'Walk-in';
+      const taxRate = parseFloat(document.getElementById('inputTax').value) / 100 || 0;
+      const inputs = document.getElementById('itemInputs').querySelectorAll('.grid');
+      receiptItems = [];
+      let subtotal = 0;
+      inputs.forEach(row => {
+        const name = row.querySelector('input:nth-child(1)').value;
+        const qty = parseFloat(row.querySelector('input:nth-child(2)').value) || 0;
+        const price = parseFloat(row.querySelector('input:nth-child(3)').value) || 0;
+        if (name && qty && price) {
+          receiptItems.push({ name, qty, price });
+          subtotal += qty * price;
+        }
+      });
+      const tax = subtotal * taxRate;
+      const total = subtotal + tax;
+      const tbody = document.getElementById('receiptItems');
+      tbody.innerHTML = receiptItems.map(item => `<tr><td class="text-left">${item.name}</td><td class="text-center">${item.qty}</td><td class="text-right">₱${fmt(item.qty * item.price)}</td></tr>`).join('');
+      document.getElementById('receiptSubtotal').textContent = fmt(subtotal);
+      document.getElementById('receiptTaxAmount').textContent = fmt(tax);
+      document.getElementById('receiptTotal').textContent = fmt(total);
+      closeReceiptModal();
+    }
+
+    function printReceipt() {
+      const receipt = document.getElementById('receipt-print');
+      if (!receipt) return;
+      const printWindow = window.open('', '', 'width=400,height=600');
+      printWindow.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Receipt</title><style>body { font-family: monospace; margin: 0; padding: 10px; font-size: 12px; } h2 { margin: 5px 0; text-align: center; } hr { border: none; border-top: 1px solid #000; margin: 5px 0; } table { width: 100%; } td { padding: 2px; } .text-center { text-align: center; } .text-right { text-align: right; } .text-left { text-align: left; } p { margin: 3px 0; }</style></head><body>');
+      printWindow.document.write(receipt.innerHTML);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 250);
+    }
+
+    document.getElementById('user-search')?.addEventListener('input', loadUsersTab);
+  </script>
+ </body>
+</html>
