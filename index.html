@@ -128,7 +128,7 @@
     <h2 id="stat-revenue" class="text-2xl font-bold text-green-400">₱0</h2>
   </div>
 
-</div>
+</div>   
       <div class="stat-card rounded-lg p-4 card-hover">
        <p class="text-cyan-400 text-xs font-bold uppercase mb-2">Codes Generated</p>
        <p id="stat-total-codes" class="text-3xl font-bold text-white">0</p>
@@ -1418,7 +1418,7 @@ async function recoverUserAccount() {
       const kwhPerJob = (power / 1000) * (runtime / 60);
       const costPerJob = kwhPerJob * rate;
       const totalCost = costPerJob * numJobs;
-      lastElecCost = costPerJob;
+      lastElecCost = costPerJob * numJobs;
       document.getElementById('elec-cost-per-job').textContent = '₱' + fmt(costPerJob);
       document.getElementById('elec-total-cost').textContent = '₱' + fmt(totalCost);
       document.getElementById('elec-breakdown').classList.remove('hidden');
@@ -1441,11 +1441,14 @@ async function recoverUserAccount() {
       const mStock = parseFloat(document.getElementById('mStock-display').textContent) || 0;
       const yStock = parseFloat(document.getElementById('yStock-display').textContent) || 0;
       const kStock = parseFloat(document.getElementById('kStock-display').textContent) || 0;
-      const mlPerPage = 0.1;
-      const cUsed = pages * mlPerPage * coverage * qualityMult * (1 + waste);
-      const mUsed = pages * mlPerPage * coverage * qualityMult * (1 + waste);
-      const yUsed = pages * mlPerPage * coverage * qualityMult * (1 + waste);
-      const kUsed = pages * mlPerPage * 0.2 * qualityMult * (1 + waste);
+      // === YIELD BASED CALCULATION ===
+const printer = currentYield;
+const bottleMl = 70; // change if your bottle size is different
+
+const cUsed = (pages / printer.yield.c) * bottleMl * coverage * qualityMult * (1 + waste);
+const mUsed = (pages / printer.yield.m) * bottleMl * coverage * qualityMult * (1 + waste);
+const yUsed = (pages / printer.yield.y) * bottleMl * coverage * qualityMult * (1 + waste);
+const kUsed = (pages / printer.yield.k) * bottleMl * coverage * qualityMult * (1 + waste);
       const cCostTotal = cUsed * cCost;
       const mCostTotal = mUsed * mCost;
       const yCostTotal = yUsed * yCost;
@@ -1522,6 +1525,10 @@ async function recoverUserAccount() {
       closeStockUpdateModal();
     }
 
+function roundUpToFive(value) {
+  return Math.ceil(value / 5) * 5;
+}
+
     function performCalculation() {
       const name = document.getElementById('product-name').value.trim();
       const qty = parseFloat(document.getElementById('product-qty').value) || 1;
@@ -1546,7 +1553,8 @@ async function recoverUserAccount() {
       const tax = subtotal * taxRate;
       const totalCost = subtotal + tax;
       const costPerUnit = totalCost / qty;
-      const sellingPrice = totalCost * (1 + profitMargin);
+      let rawPrice = totalCost / (1 - safeMargin);
+let sellingPrice = roundUpToFive(rawPrice);;
       const pricePerUnit = sellingPrice / qty;
       lastCalc = { name, qty, totalCost, costPerUnit, sellingPrice, pricePerUnit, material: materialCost, labor, overhead, machine, ink: lastInkCost, electricity: lastElecCost, subtotal, tax };
       document.getElementById('bd-material').textContent = '₱' + fmt(materialCost);
