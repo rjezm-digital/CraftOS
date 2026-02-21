@@ -101,6 +101,34 @@
        <p id="stat-active-users" class="text-3xl font-bold text-white">0</p>
        <p class="text-slate-500 text-xs mt-2">This month</p>
       </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+  <div class="bg-slate-800 p-4 rounded-xl">
+    <p class="text-slate-400 text-sm">Total Users</p>
+    <h2 id="stat-users" class="text-2xl font-bold text-white">0</h2>
+  </div>
+
+  <div class="bg-slate-800 p-4 rounded-xl">
+    <p class="text-slate-400 text-sm">Admins</p>
+    <h2 id="stat-admins" class="text-2xl font-bold text-white">0</h2>
+  </div>
+
+  <div class="bg-slate-800 p-4 rounded-xl">
+    <p class="text-slate-400 text-sm">Registration Codes</p>
+    <h2 id="stat-codes" class="text-2xl font-bold text-white">0</h2>
+  </div>
+
+  <div class="bg-slate-800 p-4 rounded-xl">
+    <p class="text-slate-400 text-sm">Used Codes</p>
+    <h2 id="stat-used-codes" class="text-2xl font-bold text-white">0</h2>
+  </div>
+
+  <div class="bg-slate-800 p-4 rounded-xl">
+    <p class="text-slate-400 text-sm">Total Revenue</p>
+    <h2 id="stat-revenue" class="text-2xl font-bold text-green-400">₱0</h2>
+  </div>
+
+</div>
       <div class="stat-card rounded-lg p-4 card-hover">
        <p class="text-cyan-400 text-xs font-bold uppercase mb-2">Codes Generated</p>
        <p id="stat-total-codes" class="text-3xl font-bold text-white">0</p>
@@ -903,31 +931,35 @@ function openAdminPanel() {
       loadOverviewTab();
     }
 
-    function loadOverviewTab() {
-      const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
-      const allCodes = allData.filter(r => r.data_type === 'registration_code');
-      const usedCodes = allCodes.filter(c => c.used).length;
-      const availableCodes = allCodes.length - usedCodes;
-      
-      let totalProducts = 0;
-      let totalRevenue = 0;
-      let activeUsersThisMonth = 0;
-      let newUsersThisMonth = 0;
-      let activeThisWeek = 0;
-      let idleUsers = 0;
+    async function loadOverviewTab() {
+  const usersSnapshot = await getDocs(collection(db, "users"));
+  const codesSnapshot = await getDocs(collection(db, "registration_codes"));
+  const ordersSnapshot = await getDocs(collection(db, "orders"));
 
-      const now = new Date();
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const totalUsers = usersSnapshot.size;
 
-      Object.keys(users).forEach(email => {
-        const userProducts = allData.filter(r => r.user_email === email && r.data_type === 'product');
-        totalProducts += userProducts.length;
-        userProducts.forEach(p => {
-          totalRevenue += p.product_selling || 0;
-        });
-        activeUsersThisMonth++;
-      });
+  const admins = usersSnapshot.docs.filter(
+    doc => doc.data().email === ADMIN_EMAIL
+  ).length;
+
+  const totalCodes = codesSnapshot.size;
+
+  const usedCodes = codesSnapshot.docs.filter(
+    doc => doc.data().used === true
+  ).length;
+
+  let totalRevenue = 0;
+  ordersSnapshot.forEach(doc => {
+    totalRevenue += doc.data().total || 0;
+  });
+
+  document.getElementById("stat-users").textContent = totalUsers;
+  document.getElementById("stat-admins").textContent = admins;
+  document.getElementById("stat-codes").textContent = totalCodes;
+  document.getElementById("stat-used-codes").textContent = usedCodes;
+  document.getElementById("stat-revenue").textContent =
+    "₱" + totalRevenue.toLocaleString();
+}
 
       document.getElementById('stat-active-users').textContent = users.length;
       document.getElementById('stat-total-codes').textContent = allCodes.length;
