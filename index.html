@@ -821,26 +821,20 @@
       return result;
     }
     
-    function openAdminPanel() {
-
-  document.getElementById("auth-screen").classList.add("hidden");
-  document.getElementById("app-screen").classList.add("hidden");
-  document.getElementById("admin-screen").classList.remove("hidden");
-
-}
+function openAdminPanel() {
 
   if (!currentUser) {
     alert("You must be logged in.");
     return;
   }
 
-  const ADMIN_EMAIL = "rjezm.tadlas@gmail.com";
+  const ADMIN_EMAIL = "admin@rjezmdigital.com";
 
   if (currentUser === ADMIN_EMAIL) {
-
-    document.getElementById("admin-screen").classList.remove("hidden");
+    document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.add("hidden");
-
+    document.getElementById("admin-screen").classList.remove("hidden");
+    loadAdminDashboard();
   } else {
     alert("Access denied. Admin only.");
   }
