@@ -909,6 +909,16 @@
       if (tab === 'codes') loadCodesTab();
       if (tab === 'audit') loadAuditTab();
     }
+    function openAdminLogin() {
+  const pass = prompt("Enter Admin Password:");
+
+  if (pass === "lilastronaut") {   // your current admin password
+    document.getElementById("admin-screen").classList.remove("hidden");
+    document.getElementById("app-screen").classList.add("hidden");
+  } else {
+    alert("Incorrect password");
+  }
+}
 
     function loadAdminDashboard() {
       loadOverviewTab();
