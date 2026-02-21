@@ -894,14 +894,14 @@
       auditLog = JSON.parse(localStorage.getItem('rjezm_audit_log') || '[]');
       });
       
-    function switchToSignup() {
+    window.switchToSignup = function () {
       document.getElementById('login-form').classList.add('hidden');
       document.getElementById('code-signup-form').classList.remove('hidden');
       document.getElementById('login-error').classList.add('hidden');
       document.getElementById('code-signup-error').classList.add('hidden');
     }
 
-    function switchToLogin() {
+    window.switchToLogin = function () {
       document.getElementById('code-signup-form').classList.add('hidden');
       document.getElementById('login-form').classList.remove('hidden');
       document.getElementById('login-error').classList.add('hidden');
