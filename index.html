@@ -1150,31 +1150,47 @@
     }
 
     async function changeAdminPassword() {
-      const currentPass = document.getElementById('admin-current-pass').value;
-      const newPass = document.getElementById('admin-new-pass').value;
-      const msgEl = document.getElementById('admin-pass-message');
+  const currentPass = document.getElementById('admin-current-pass').value;
+  const newPass = document.getElementById('admin-new-pass').value;
+  const msgEl = document.getElementById('admin-pass-message');
 
-      if (currentPass !== adminPassword) {
-        msgEl.textContent = 'Current password is incorrect';
-        msgEl.className = 'bg-red-500/20 border border-red-500/50 text-red-300';
-        msgEl.classList.remove('hidden');
-        return;
-      }
+  if (currentPass !== adminPassword) {
+    msgEl.textContent = 'Current password is incorrect';
+    msgEl.className = 'bg-red-500/20 border border-red-500/50 text-red-300';
+    msgEl.classList.remove('hidden');
+    return;
+  }
 
-      if (!newPass || newPass.length < 6) {
-        msgEl.textContent = 'New password must be at least 6 characters';
-        msgEl.className = 'bg-red-500/20 border border-red-500/50 text-red-300';
-        msgEl.classList.remove('hidden');
-        return;
-      }
+  if (!newPass || newPass.length < 6) {
+    msgEl.textContent = 'New password must be at least 6 characters';
+    msgEl.className = 'bg-red-500/20 border border-red-500/50 text-red-300';
+    msgEl.classList.remove('hidden');
+    return;
+  }
 
-      adminPassword = newPass;
-      msgEl.textContent = '✅ Admin password updated successfully!';
-      msgEl.className = 'bg-green-500/20 border border-green-500/50 text-green-300';
-      msgEl.classList.remove('hidden');
-      logAudit('Admin password changed');
-      document.getElementById('admin-current-pass').value = '';
-      
+  adminPassword = newPass;
+
+  msgEl.textContent = '✅ Admin password updated successfully!';
+  msgEl.className = 'bg-green-500/20 border border-green-500/50 text-green-300';
+  msgEl.classList.remove('hidden');
+
+  logAudit('Admin password changed');
+
+  document.getElementById('admin-current-pass').value = '';
+  document.getElementById('admin-new-pass').value = '';
+}
+
+async function recoverUserAccount() {
+  const email = document.getElementById('recovery-email').value.trim();
+  const newPassword = document.getElementById('recovery-password').value.trim();
+
+  if (!email || !newPassword) {
+    showNotification("Please fill in all fields", "error");
+    return;
+  }
+
+  showNotification("⚠️ Use Firebase password reset instead", "error");
+}
 
       async function recoverUserAccount() {
   const email = document.getElementById('recovery-email').value.trim();
