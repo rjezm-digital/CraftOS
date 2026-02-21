@@ -1767,37 +1767,23 @@ window.handleLogout = async function () {
 // AUTH STATE LISTENER
 // ==========================
 onAuthStateChanged(auth, (user) => {
-
   if (user) {
-
-    currentUser = user.email;
-    document.getElementById("auth-screen").classList.add("hidden");
-
-    const ADMIN_EMAIL = "admin@rjezmdigital.com";
-
     if (user.email === ADMIN_EMAIL) {
+      // ADMIN LOGIN
+      document.getElementById("login-screen").classList.add("hidden");
       document.getElementById("admin-screen").classList.remove("hidden");
-      document.getElementById("app-screen").classList.add("hidden");
-      loadAdminDashboard();
     } else {
+      // NORMAL USER
+      document.getElementById("login-screen").classList.add("hidden");
       document.getElementById("app-screen").classList.remove("hidden");
-      document.getElementById("admin-screen").classList.add("hidden");
-      document.getElementById("user-email").textContent = user.email;
-      refreshUserData();
-      updateUI();
     }
-
   } else {
-
-    currentUser = null;
-
-    document.getElementById("auth-screen").classList.remove("hidden");
+    // LOGGED OUT
+    document.getElementById("login-screen").classList.remove("hidden");
     document.getElementById("app-screen").classList.add("hidden");
     document.getElementById("admin-screen").classList.add("hidden");
   }
-
 });
-
 
 </script>
  </body>
