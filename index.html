@@ -607,12 +607,11 @@
       </div>
       <div class="mt-4">
   <label class="text-xs text-slate-400 uppercase">Profit Margin (%)</label>
-  <input 
-    type="number" 
-    id="profit-margin" 
-    value="30" 
-    min="1" 
-    max="90" 
+  <input type="number" 
+  id="profit-margin-input" 
+  value="30" 
+  min="1" 
+  max="90"
     class="w-full mt-1 p-2 rounded bg-slate-800 text-white"
   >
 </div>
@@ -1436,8 +1435,8 @@ function roundUpToFive(value) {
   const machine = parseFloat(document.getElementById('machine-cost').value) || 0;
 
   const taxRate = (parseFloat(document.getElementById('tax-rate').value) || 0) / 100;
-  let profitMargin = (parseFloat(document.getElementById('profit-margin').value) || 30) / 100;
-
+  let profitMargin = (parseFloat(document.getElementById('profit-margin-input').value) || 30) / 100;
+  
   // Safety protection
   if (profitMargin >= 0.95) profitMargin = 0.95;
   if (profitMargin <= 0) profitMargin = 0.01;
