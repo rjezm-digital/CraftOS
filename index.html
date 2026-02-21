@@ -814,20 +814,6 @@
       }
     }
 
-    function syncUsersToSDK() {
-      const localUsers = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
-      Object.keys(localUsers).forEach(email => {
-        const hasRecord = allData.some(r => r.data_type === 'user_account' && r.user_email === email);
-        if (!hasRecord) {
-          window.dataSdk.create({
-            user_email: email,
-            data_type: 'user_account',
-            user_password: localUsers[email].password
-          });
-        }
-      });
-    }
-
     async function saveToSDK(dataType, record) {
       if (!currentUser) return;
       record.user_email = currentUser;
@@ -864,7 +850,6 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       await initSDK();
-      syncUsersToSDK();
       document.getElementById("receiptDate").innerText = new Date().toLocaleString();
       auditLog = JSON.parse(localStorage.getItem('rjezm_audit_log') || '[]');
       document.getElementById('admin-password-input')?.addEventListener('keypress', (e) => {
@@ -930,7 +915,7 @@
     }
 
     function loadOverviewTab() {
-      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
       const allCodes = allData.filter(r => r.data_type === 'registration_code');
       const usedCodes = allCodes.filter(c => c.used).length;
       const availableCodes = allCodes.length - usedCodes;
@@ -955,7 +940,7 @@
         activeUsersThisMonth++;
       });
 
-      document.getElementById('stat-active-users').textContent = Object.keys(users).length;
+      document.getElementById('stat-active-users').textContent = users.length;
       document.getElementById('stat-total-codes').textContent = allCodes.length;
       document.getElementById('stat-codes-used').textContent = usedCodes;
       document.getElementById('stat-avg-products').textContent = Object.keys(users).length > 0 ? (totalProducts / Object.keys(users).length).toFixed(1) : '0';
@@ -975,11 +960,11 @@
     }
 
     function loadUsersTab() {
-      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
+      const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
       const searchTerm = document.getElementById('user-search').value.toLowerCase();
       const list = document.getElementById('users-detail-list');
 
-      const filteredUsers = Object.keys(users).filter(email => email.toLowerCase().includes(searchTerm));
+      const filteredUsers = users.filter(email => email.toLowerCase().includes(searchTerm));
 
       if (filteredUsers.length === 0) {
         list.innerHTML = '<p class="text-slate-500 text-center py-8">No users found.</p>';
@@ -1046,98 +1031,102 @@
       });
     }
 
-    function loadCodesTab() {
-      const allCodes = allData.filter(r => r.data_type === 'registration_code');
-      const codesList = document.getElementById('codes-list');
+    async function loadCodesTab() {
+  const { collection, getDocs } =
+    await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-      if (allCodes.length === 0) {
-        codesList.innerHTML = '<p class="text-slate-500 text-center py-6">No codes generated yet.</p>';
-        document.getElementById('codes-count').textContent = '0 codes';
-        return;
-      }
+  const snapshot = await getDocs(collection(db, "registration_codes"));
 
-      const availableCodes = allCodes.filter(c => !c.used);
-      const usedCodes = allCodes.filter(c => c.used);
+  const allCodes = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 
-      codesList.innerHTML = [
-        ...availableCodes.map(codeRecord => `
-          <div class="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg p-3 border border-green-500/50 flex justify-between items-start gap-2 card-hover">
-            <div>
-              <p class="text-green-300 font-bold font-mono text-sm">${codeRecord.code}</p>
-              <p class="text-green-400/80 text-xs">🟢 Available</p>
-            </div>
-            <button onclick="deleteCode('${codeRecord.code}')" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold transition flex-shrink-0">✕</button>
-          </div>
-        `),
-        ...usedCodes.map(codeRecord => `
-          <div class="bg-gradient-to-r from-slate-700/40 to-slate-600/20 rounded-lg p-3 border border-slate-600/50 flex justify-between items-start gap-2">
-            <div>
-              <p class="text-slate-400 font-bold font-mono text-sm">${codeRecord.code}</p>
-              <p class="text-slate-500 text-xs">✅ Used by ${codeRecord.used_by}</p>
-            </div>
-            <button onclick="deleteCode('${codeRecord.code}')" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold transition flex-shrink-0">✕</button>
-          </div>
-        `)
-      ].join('');
+  const codesList = document.getElementById('codes-list');
 
-      document.getElementById('codes-count').textContent = `${availableCodes.length} available, ${usedCodes.length} used`;
-    }
+  if (allCodes.length === 0) {
+    codesList.innerHTML = '<p class="text-slate-500 text-center py-6">No codes generated yet.</p>';
+    document.getElementById('codes-count').textContent = '0 codes';
+    return;
+  }
 
-    function loadAuditTab() {
-      const list = document.getElementById('audit-log-list');
-      if (auditLog.length === 0) {
-        list.innerHTML = '<p class="text-slate-500 text-center py-8">No audit logs yet.</p>';
-        return;
-      }
+  const availableCodes = allCodes.filter(c => !c.used);
+  const usedCodes = allCodes.filter(c => c.used);
 
-      list.innerHTML = auditLog.map((log, idx) => `
-        <div class="bg-slate-700/30 rounded p-2 border border-slate-700/50">
-          <p class="text-slate-300 text-xs"><span class="text-amber-400 font-bold">${log.timestamp}</span> • ${log.action}</p>
-        </div>
-      `).join('');
-    }
+  codesList.innerHTML = [
+  availableCodes.map(codeRecord => `
+    <div class="bg-green-500/20 rounded-lg p-3 border border-green-500/50 flex justify-between items-center">
+      <div>
+        <p class="text-green-300 font-mono text-sm">${codeRecord.code}</p>
+        <p class="text-green-400 text-xs">Available</p>
+      </div>
+      <button 
+        onclick="deleteCode('${codeRecord.id}')" 
+        class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-1 rounded text-xs font-bold">
+        Delete
+      </button>
+    </div>
+  `),
+
+  usedCodes.map(codeRecord => `
+    <div class="bg-slate-700/40 rounded-lg p-3 border border-slate-600/50 flex justify-between items-center">
+      <div>
+        <p class="text-slate-400 font-mono text-sm">${codeRecord.code}</p>
+        <p class="text-slate-500 text-xs">Used by ${codeRecord.used_by || 'Unknown'}</p>
+      </div>
+      <button 
+        onclick="deleteCode('${codeRecord.id}')" 
+        class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-1 rounded text-xs font-bold">
+        Delete
+      </button>
+    </div>
+  `)
+].join('');
+
+  document.getElementById('codes-count').textContent =
+    `${availableCodes.length} available, ${usedCodes.length} used`;
+}
 
     async function generateCodes() {
-      const num = parseInt(document.getElementById('num-codes').value) || 5;
-      const newCodes = [];
-      for (let i = 0; i < num; i++) {
-        const code = 'RJZ' + Math.random().toString(36).substr(2, 9).toUpperCase();
-        newCodes.push(code);
-        await window.dataSdk.create({
-          user_email: 'admin',
-          data_type: 'registration_code',
-          code: code,
-          used: false,
-          used_by: '',
-          created_at: new Date().toISOString(),
-          used_at: ''
-        });
-      }
-      logAudit(`Generated ${num} registration codes`);
-      showNotification(`Generated ${newCodes.length} codes!`, "success");
-      loadCodesTab();
-      loadOverviewTab();
+  const num = parseInt(document.getElementById('num-codes').value) || 1;
+
+  try {
+    const { collection, addDoc } =
+      await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+    for (let i = 0; i < num; i++) {
+      const code = "CODE-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      await addDoc(collection(db, "registration_codes"), {
+        code: code,
+        used: false,
+        created_at: new Date()
+      });
     }
 
-    async function deleteCode(code) {
-      if (confirm('Delete this code?')) {
-        const codeRecord = allData.find(r => r.data_type === 'registration_code' && r.code === code);
-        if (codeRecord) {
-          await window.dataSdk.delete(codeRecord);
-          logAudit(`Deleted code: ${code}`);
-          loadCodesTab();
-          loadOverviewTab();
-          showNotification('Code deleted', "success");
-        }
-      }
-    }
+    showNotification(`✅ Generated ${num} codes`, "success");
+
+  } catch (err) {
+    showNotification(err.message, "error");
+  }
+}
+
+    async function deleteCode(codeId) {
+  if (!confirm("Delete this code?")) return;
+
+  try {
+    await deleteDoc(doc(window.db, "registration_codes", codeId));
+    showNotification("Code deleted", "success");
+    loadCodesTab();
+    loadOverviewTab();
+  } catch (err) {
+    showNotification(err.message, "error");
+  }
+}
 
     async function deleteUser(email) {
       if (confirm(`Delete user ${email} and all their data?`)) {
-        const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
-        delete users[email];
-        localStorage.setItem('rjezm_users', JSON.stringify(users));
-
+        
         const userRecords = allData.filter(r => r.user_email === email);
         for (const record of userRecords) {
           await window.dataSdk.delete(record);
@@ -1175,48 +1164,22 @@
       msgEl.classList.remove('hidden');
       logAudit('Admin password changed');
       document.getElementById('admin-current-pass').value = '';
-      document.getElementById('admin-new-pass').value = '';
-    }
-
-    async function recoverUserAccount() {
-      const email = document.getElementById('recovery-email').value.trim();
-      const newPassword = document.getElementById('recovery-password').value.trim();
       
-      if (!email || !newPassword) {
-        showNotification('Please fill in all fields', 'error');
-        return;
-      }
 
-      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
-      users[email] = { password: newPassword };
-      localStorage.setItem('rjezm_users', JSON.stringify(users));
+      async function recoverUserAccount() {
+  const email = document.getElementById('recovery-email').value.trim();
+  const newPassword = document.getElementById('recovery-password').value.trim();
 
-      const existingRecord = allData.find(r => r.data_type === 'user_account' && r.user_email === email);
-      if (existingRecord) {
-        await window.dataSdk.update({
-          ...existingRecord,
-          user_password: newPassword
-        });
-      } else {
-        await window.dataSdk.create({
-          user_email: email,
-          data_type: 'user_account',
-          user_password: newPassword
-        });
-      }
+  if (!email || !newPassword) {
+    showNotification("Please fill in all fields", "error");
+    return;
+  }
 
-      document.getElementById('recovery-email').value = '';
-      document.getElementById('recovery-password').value = '';
-      logAudit(`Recovered account: ${email}`);
-      showNotification(`✅ Account recovered for ${email}!`, 'success');
-    }
-
+  showNotification("⚠️ Use Firebase password reset instead", "error");
+}
     function saveBrandingSettings() {
       const company = document.getElementById('company-name').value || 'RJEZM DIGITAL';
       const tagline = document.getElementById('company-tagline').value || 'Professional Print Solutions';
-      
-      localStorage.setItem('rjezm_company_name', company);
-      localStorage.setItem('rjezm_company_tagline', tagline);
       
       document.getElementById('companyName').textContent = company;
       logAudit(`Updated branding: ${company}`);
@@ -1239,125 +1202,6 @@
       document.getElementById('auth-screen').classList.remove('hidden');
     }
 
-    function handleLogin() {
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value.trim();
-      const errorEl = document.getElementById('login-error');
-      if (!email || !password) {
-        errorEl.textContent = 'Please fill in all fields';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
-      if (users[email] && users[email].password === password) {
-        currentUser = email;
-        refreshUserData();
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
-        document.getElementById('user-email').textContent = email;
-        document.getElementById('login-email').value = '';
-        document.getElementById('login-password').value = '';
-        updateUI();
-      } else {
-        errorEl.textContent = 'Invalid email or password';
-        errorEl.classList.remove('hidden');
-      }
-    }
-
-    async function handleCodeSignup() {
-  const email = document.getElementById("code-email").value.trim();
-  const password = document.getElementById("code-password").value.trim();
-  const codeInput = document.getElementById("code-input").value.trim().toUpperCase();
-  const errorEl = document.getElementById("code-signup-error");
-
-  errorEl.classList.add("hidden");
-
-  if (!email || !password || !codeInput) {
-    errorEl.textContent = "Please fill in all fields";
-    errorEl.classList.remove("hidden");
-    return;
-  }
-
-  if (password.length < 6) {
-    errorEl.textContent = "Password must be at least 6 characters";
-    errorEl.classList.remove("hidden");
-    return;
-  }
-
-  try {
-    const { collection, query, where, getDocs, updateDoc, doc } =
-      await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-
-    const codesRef = collection(firebaseDB, "registrationCodes");
-    const q = query(codesRef, where("code", "==", codeInput));
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      errorEl.textContent = "Invalid registration code";
-      errorEl.classList.remove("hidden");
-      return;
-    }
-
-    const codeDoc = snapshot.docs[0];
-    const codeData = codeDoc.data();
-    const now = new Date();
-
-    if (!codeData.active) {
-      errorEl.textContent = "Code is not active";
-      errorEl.classList.remove("hidden");
-      return;
-    }
-
-    if (codeData.usedCount >= codeData.maxUses) {
-      errorEl.textContent = "Code already used";
-      errorEl.classList.remove("hidden");
-      return;
-    }
-
-    if (codeData.expiresAt.toDate() < now) {
-      errorEl.textContent = "Code expired";
-      errorEl.classList.remove("hidden");
-      return;
-    }
-
-    // Create Firebase Auth user
-    await createUserWithEmailAndPassword(firebaseAuth, email, password);
-
-    // Increase usedCount
-    await updateDoc(doc(firebaseDB, "registrationCodes", codeDoc.id), {
-      usedCount: codeData.usedCount + 1
-    });
-
-    alert("Account created successfully!");
-
-    switchToLogin();
-
-  } catch (error) {
-    errorEl.textContent = error.message;
-    errorEl.classList.remove("hidden");
-  }
-}
-      currentUser = email;
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('app-screen').classList.remove('hidden');
-      document.getElementById('user-email').textContent = email;
-      document.getElementById('code-email').value = '';
-      document.getElementById('code-password').value = '';
-      document.getElementById('code-input').value = '';
-      updateUI();
-    }
-
-    function handleLogout() {
-      currentUser = null;
-      document.getElementById('app-screen').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-      document.getElementById('login-email').value = '';
-      document.getElementById('login-password').value = '';
-      document.getElementById('code-email').value = '';
-      document.getElementById('code-password').value = '';
-      document.getElementById('code-input').value = '';
-    }
-
     function showNotification(message, type) {
       const isError = type === "error";
       const notification = document.createElement('div');
@@ -1378,70 +1222,6 @@
 
     function closePasswordChangeModal() {
       document.getElementById('passwordChangeModal').classList.add('hidden');
-    }
-
-    async function applyPasswordChange() {
-      const currentPassword = document.getElementById('current-password').value;
-      const newPassword = document.getElementById('new-password').value;
-      const confirmPassword = document.getElementById('confirm-password').value;
-      const errorEl = document.getElementById('password-change-error');
-      const successEl = document.getElementById('password-change-success');
-
-      errorEl.classList.add('hidden');
-      successEl.classList.add('hidden');
-
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        errorEl.textContent = 'All fields are required';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      const users = JSON.parse(localStorage.getItem('rjezm_users') || '{}');
-      if (!users[currentUser] || users[currentUser].password !== currentPassword) {
-        errorEl.textContent = 'Current password is incorrect';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      if (newPassword.length < 6) {
-        errorEl.textContent = 'New password must be at least 6 characters';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        errorEl.textContent = 'Passwords do not match';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      users[currentUser].password = newPassword;
-      localStorage.setItem('rjezm_users', JSON.stringify(users));
-
-      const userRecord = allData.find(r => r.data_type === 'user_account' && r.user_email === currentUser);
-      if (userRecord) {
-        await window.dataSdk.update({
-          ...userRecord,
-          user_password: newPassword
-        });
-      }
-
-      successEl.textContent = '✅ Password changed successfully!';
-      successEl.classList.remove('hidden');
-      setTimeout(() => {
-        closePasswordChangeModal();
-      }, 2000);
-    }
-
-    function updateUI() {
-      renderInkMaterials();
-      renderMaterials();
-      renderCosting();
-      renderProducts();
-      updateMaterialSelect();
-      updateInkCosts();
-      updateStats();
-      updateInkLevels();
     }
 
     function switchTab(tab) {
@@ -1885,91 +1665,155 @@
     }
 
     document.getElementById('user-search')?.addEventListener('input', loadUsersTab);
+    
+    document.getElementById('user-search')?.addEventListener('input', loadUsersTab);
+
+function updateUI() {
+  renderInkMaterials();
+  renderMaterials();
+  renderCosting();
+  renderProducts();
+  updateMaterialSelect();
+  updateInkCosts();
+  updateStats();
+  updateInkLevels();
+}
   </script>
+  <script type="module">
+      
+import { auth, db } from "./firebase.js";
+
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc
+  deleteDoc
   
-<script type="module">
-  import { auth, db } from "./firebase.js";
-  import { 
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  window.firebaseAuth = auth;
-  window.firebaseDB = db;
+window.db = db;
+window.doc = doc;
+window.deleteDoc = deleteDoc;
 
-  // REGISTER
-  window.registerUser = async function () {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+// ==========================
+// SIGNUP WITH REG CODE
+// ==========================
+window.handleCodeSignup = async function () {
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      alert("Registration successful!");
-    } catch (error) {
-      alert(error.message);
+  const email = document.getElementById("code-email").value.trim();
+  const password = document.getElementById("code-password").value.trim();
+  const codeInput = document.getElementById("code-input").value.trim().toUpperCase();
+  const errorEl = document.getElementById("code-signup-error");
+
+  errorEl.classList.add("hidden");
+
+  if (!email || !password || !codeInput) {
+    errorEl.textContent = "Please fill in all fields";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    // Check registration code in Firestore
+    const q = query(
+      collection(db, "registration_codes"),
+      where("code", "==", codeInput),
+      where("used", "==", false)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      errorEl.textContent = "Invalid or already used code";
+      errorEl.classList.remove("hidden");
+      return;
     }
-  };
 
-  // LOGIN
-  window.loginUser = async function () {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    // Create user
+    await createUserWithEmailAndPassword(auth, email, password);
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Login successful!");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+    // Mark code as used
+    const codeDoc = snapshot.docs[0];
+    await updateDoc(doc(db, "registration_codes", codeDoc.id), {
+      used: true,
+      used_by: email,
+      used_at: new Date()
+    });
 
-  // LOGOUT
-  window.logoutUser = async function () {
-    await signOut(auth);
-  };
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.remove("hidden");
+  }
+};
 
-  // AUTH STATE LISTENER
-  onAuthStateChanged(auth, (user) => {
+
+
+// ==========================
+// LOGIN
+// ==========================
+window.handleLogin = async function () {
+
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+  const errorEl = document.getElementById("login-error");
+
+  errorEl.classList.add("hidden");
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.remove("hidden");
+  }
+};
+
+
+
+// ==========================
+// LOGOUT
+// ==========================
+window.handleLogout = async function () {
+  await signOut(auth);
+};
+
+
+
+// ==========================
+// AUTH STATE LISTENER
+// ==========================
+onAuthStateChanged(auth, (user) => {
   if (user) {
-    console.log("Logged in:", user.email);
+
+    // 🔥 IMPORTANT — set global current user
+    currentUser = user.email;
 
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.remove("hidden");
+    document.getElementById("user-email").textContent = user.email;
+
+    refreshUserData();
+    updateUI();
 
   } else {
 
+    currentUser = null;
+
     document.getElementById("auth-screen").classList.remove("hidden");
     document.getElementById("app-screen").classList.add("hidden");
-
   }
 });
 
-  console.log("Firebase Auth Ready");
-</script>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDSA9E4nDca50a1WcmNLFLXudI-PCOfFbg",
-  authDomain: "rjezm-print-os.firebaseapp.com",
-  projectId: "rjezm-print-os",
-  storageBucket: "rjezm-print-os.firebasestorage.app",
-  messagingSenderId: "871926743321",
-  appId: "1:871926743321:web:1d46bf4351b497fd738588"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// Now your signup & login functions below here
 
 </script>
-</div>
  </body>
 </html>
