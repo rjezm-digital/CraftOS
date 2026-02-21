@@ -904,32 +904,25 @@ window.switchToLogin = function () {
     }
 
     function loadUsersTab() {
-      const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
-      const searchTerm = document.getElementById('user-search').value.toLowerCase();
-      const list = document.getElementById('users-detail-list');
+  const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
+  const searchTerm = document.getElementById('user-search').value.toLowerCase();
+  const list = document.getElementById('users-detail-list');
 
-      const filteredUsers = users.filter(email => email.toLowerCase().includes(searchTerm));
+  const filteredUsers = users.filter(email =>
+    email.toLowerCase().includes(searchTerm)
+  );
 
-      if (filteredUsers.length === 0) {
-        list.innerHTML = '<p class="text-slate-500 text-center py-8">No users found.</p>';
-        return;
-      }
+  if (filteredUsers.length === 0) {
+    list.innerHTML = '<p class="text-slate-500 text-center py-8">No users found.</p>';
+    return;
+  }
 
-      list.innerHTML = filteredUsers.map(email => {
-        const userProducts = allData.filter(r => r.user_email === email && r.data_type === 'product').length;
-        const userMaterials = allData.filter(r => r.user_email === email && r.data_type === 'material').length;
-        const userInks = allData.filter(r => r.user_email === email && r.data_type === 'ink').length;
-        const totalRevenue = allData.filter(r => r.user_email === email && r.data_type === 'product').reduce((sum, p) => sum + (p.product_selling || 0), 0);
-        
-        // Find user's registration code
-        const userCodeRecord = allData.find(r => r.data_type === 'registration_code' && r.used_by === email);
-        const userCode = userCodeRecord ? userCodeRecord.code : 'N/A';
-
-            </div>
-          </div>
-        ;
-      }).join('');
-    }
+  list.innerHTML = filteredUsers.map(email => `
+    <div class="bg-slate-700/40 p-3 rounded-lg border border-slate-600/50">
+      <p class="text-white font-bold">${email}</p>
+    </div>
+  `).join('');
+}
 
     function copyUserCode(code) {
       if (code === 'N/A') {
