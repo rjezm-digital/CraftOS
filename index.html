@@ -961,20 +961,6 @@ function openAdminPanel() {
     "₱" + totalRevenue.toLocaleString();
 }
 
-      document.getElementById('stat-active-users').textContent = users.length;
-      document.getElementById('stat-total-codes').textContent = allCodes.length;
-      document.getElementById('stat-codes-used').textContent = usedCodes;
-      document.getElementById('stat-avg-products').textContent = Object.keys(users).length > 0 ? (totalProducts / Object.keys(users).length).toFixed(1) : '0';
-      document.getElementById('stat-total-revenue').textContent = '₱' + fmt(totalRevenue);
-
-      document.getElementById('code-status-used').textContent = usedCodes;
-      document.getElementById('code-status-available').textContent = availableCodes;
-      if (allCodes.length > 0) {
-        const usagePercent = (usedCodes / allCodes.length) * 100;
-        document.getElementById('code-usage-bar').style.width = usagePercent + '%';
-        document.getElementById('code-available-bar').style.width = (100 - usagePercent) + '%';
-      }
-
       document.getElementById('active-this-week').textContent = activeThisWeek;
       document.getElementById('idle-users').textContent = idleUsers;
       document.getElementById('new-users-month').textContent = newUsersThisMonth;
@@ -1189,13 +1175,10 @@ async function recoverUserAccount() {
         logAudit('Audit log cleared');
         showNotification('Audit log cleared', 'success');
       }
-    }
-
+    
     function handleAdminLogout() {
-      logAudit('Admin logged out');
-      document.getElementById('admin-screen').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-    }
+  signOut(auth);
+}
 
     function showNotification(message, type) {
       const isError = type === "error";
@@ -1808,20 +1791,24 @@ window.handleLogout = async function () {
 // ==========================
 onAuthStateChanged(auth, (user) => {
   if (user) {
+
+    // If admin
     if (user.email === ADMIN_EMAIL) {
-      // ADMIN LOGIN
       document.getElementById("login-screen").classList.add("hidden");
       document.getElementById("admin-screen").classList.remove("hidden");
-    } else {
-      // NORMAL USER
-      document.getElementById("login-screen").classList.add("hidden");
-      document.getElementById("app-screen").classList.remove("hidden");
+      loadOverviewTab();
+      return;
     }
+
+    // Normal user
+    document.getElementById("login-screen").classList.add("hidden");
+    document.getElementById("calculator-screen").classList.remove("hidden");
+
   } else {
-    // LOGGED OUT
+    // Not logged in
     document.getElementById("login-screen").classList.remove("hidden");
-    document.getElementById("app-screen").classList.add("hidden");
     document.getElementById("admin-screen").classList.add("hidden");
+    document.getElementById("calculator-screen").classList.add("hidden");
   }
 });
 
