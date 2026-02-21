@@ -1705,44 +1705,11 @@ function updateUI() {
 }
   </script>
   <script type="module">
-      const ADMIN_EMAIL = "admin@rjezmdigital.com";
-  try {
 
-    // === GET DATA FROM FIRESTORE ===
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    const codesSnapshot = await getDocs(collection(db, "registration_codes"));
-    const ordersSnapshot = await getDocs(collection(db, "orders"));
+/* ==============================
+   FIREBASE IMPORTS
+============================== */
 
-    const totalUsers = usersSnapshot.size;
-    const totalCodes = codesSnapshot.size;
-
-    const usedCodes = codesSnapshot.docs.filter(doc => 
-      doc.data().used === true
-    ).length;
-
-    // Count Admins
-    const admins = usersSnapshot.docs.filter(doc =>
-      doc.data().email === ADMIN_EMAIL
-    ).length;
-
-    // Calculate Total Revenue
-    let totalRevenue = 0;
-    ordersSnapshot.forEach(doc => {
-      totalRevenue += doc.data().total || 0;
-    });
-
-    // === UPDATE UI ===
-    document.getElementById("stat-users").textContent = totalUsers;
-    document.getElementById("stat-admins").textContent = admins;
-    document.getElementById("stat-codes").textContent = totalCodes;
-    document.getElementById("stat-used-codes").textContent = usedCodes;
-    document.getElementById("stat-revenue").textContent =
-      "₱" + totalRevenue.toLocaleString();
-
-  } catch (error) {
-    console.error("Overview load error:", error);
-  }
-}
 import { auth, db } from "./firebase.js";
 
 import {
@@ -1760,16 +1727,62 @@ import {
   updateDoc,
   doc,
   deleteDoc
-  
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ==============================
+   GLOBALS
+============================== */
+
+const ADMIN_EMAIL = "admin@rjezmdigital.com";
 
 window.db = db;
 window.doc = doc;
 window.deleteDoc = deleteDoc;
 
-// ==========================
-// SIGNUP WITH REG CODE
-// ==========================
+/* ==============================
+   LOAD ADMIN OVERVIEW
+============================== */
+
+async function loadOverviewTab() {
+
+  try {
+
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    const codesSnapshot = await getDocs(collection(db, "registration_codes"));
+    const ordersSnapshot = await getDocs(collection(db, "orders"));
+
+    const totalUsers = usersSnapshot.size;
+    const totalCodes = codesSnapshot.size;
+
+    const usedCodes = codesSnapshot.docs.filter(d => d.data().used === true).length;
+
+    const admins = usersSnapshot.docs.filter(d =>
+      d.data().email === ADMIN_EMAIL
+    ).length;
+
+    let totalRevenue = 0;
+    ordersSnapshot.forEach(doc => {
+      totalRevenue += doc.data().total || 0;
+    });
+
+    document.getElementById("stat-users").textContent = totalUsers;
+    document.getElementById("stat-admins").textContent = admins;
+    document.getElementById("stat-codes").textContent = totalCodes;
+    document.getElementById("stat-used-codes").textContent = usedCodes;
+    document.getElementById("stat-revenue").textContent =
+      "₱" + totalRevenue.toLocaleString();
+
+  } catch (error) {
+    console.error("Overview load error:", error);
+  }
+}
+
+window.loadAdminDashboard = loadOverviewTab;
+
+/* ==============================
+   SIGNUP WITH REG CODE
+============================== */
+
 window.handleCodeSignup = async function () {
 
   const email = document.getElementById("code-email").value.trim();
@@ -1786,7 +1799,7 @@ window.handleCodeSignup = async function () {
   }
 
   try {
-    // Check registration code in Firestore
+
     const q = query(
       collection(db, "registration_codes"),
       where("code", "==", codeInput),
@@ -1801,11 +1814,10 @@ window.handleCodeSignup = async function () {
       return;
     }
 
-    // Create user
     await createUserWithEmailAndPassword(auth, email, password);
 
-    // Mark code as used
     const codeDoc = snapshot.docs[0];
+
     await updateDoc(doc(db, "registration_codes", codeDoc.id), {
       used: true,
       used_by: email,
@@ -1819,10 +1831,10 @@ window.handleCodeSignup = async function () {
 };
 
 
+/* ==============================
+   LOGIN
+============================== */
 
-// ==========================
-// LOGIN
-// ==========================
 window.handleLogin = async function () {
 
   const email = document.getElementById("login-email").value.trim();
@@ -1833,25 +1845,30 @@ window.handleLogin = async function () {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // UI routing handled by onAuthStateChanged
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove("hidden");
   }
 };
 
-// ==========================
-// LOGOUT
-// ==========================
+
+/* ==============================
+   LOGOUT
+============================== */
+
 window.handleLogout = async function () {
   await signOut(auth);
 };
 
+window.handleAdminLogout = async function () {
+  await signOut(auth);
+};
 
 
-// ==========================
-// AUTH STATE LISTENER
-// ==========================
+/* ==============================
+   AUTH STATE LISTENER
+============================== */
+
 onAuthStateChanged(auth, (user) => {
 
   const authScreen = document.getElementById("auth-screen");
@@ -1870,13 +1887,14 @@ onAuthStateChanged(auth, (user) => {
   if (user.email === ADMIN_EMAIL) {
     adminScreen.classList.remove("hidden");
     appScreen.classList.add("hidden");
-    loadAdminDashboard();
+    loadOverviewTab();
   } else {
     appScreen.classList.remove("hidden");
     adminScreen.classList.add("hidden");
   }
 
 });
+
 </script>
  </body>
 </html>
