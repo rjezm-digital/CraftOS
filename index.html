@@ -1892,14 +1892,16 @@ onAuthStateChanged(auth, (user) => {
   const adminScreen = document.getElementById("admin-screen");
   const appScreen = document.getElementById("app-screen");
 
+  const ADMIN_EMAIL = "admin@rjezmdigital.com";
+
   if (user) {
 
     authScreen.classList.add("hidden");
 
-    if (user.email === admin@rjezmdigital.com) {
+    if (user.email === ADMIN_EMAIL) {
       adminScreen.classList.remove("hidden");
       appScreen.classList.add("hidden");
-      loadOverviewTab();
+      loadAdminDashboard();
     } else {
       appScreen.classList.remove("hidden");
       adminScreen.classList.add("hidden");
@@ -1913,7 +1915,6 @@ onAuthStateChanged(auth, (user) => {
 
   }
 });
-
 </script>
  </body>
 </html>
