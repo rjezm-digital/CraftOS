@@ -612,6 +612,17 @@
       <div class="flex justify-between text-xs text-slate-500 mt-2">
        <span>0%</span> <span>100%</span> <span>200%</span>
       </div>
+      <div class="mt-4">
+  <label class="text-xs text-slate-400 uppercase">Profit Margin (%)</label>
+  <input 
+    type="number" 
+    id="profit-margin" 
+    value="30" 
+    min="1" 
+    max="90" 
+    class="w-full mt-1 p-2 rounded bg-slate-800 text-white"
+  >
+</div>
      </div><button onclick="performCalculation()" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl transition transform hover:scale-105 text-lg shadow-lg shadow-purple-500/25">💰 CALCULATE PRODUCT COST</button>
      <div id="breakdown-section" class="hidden">
       <h3 class="text-xl font-bold text-white border-b border-slate-700 pb-4 mb-6">📊 Cost Breakdown</h3>
@@ -660,6 +671,15 @@
        <div class="text-center">
         <p class="text-green-400 text-xs font-bold uppercase mb-2">💰 Recommended Selling Price</p>
         <p id="bd-selling-price" class="text-4xl font-bold text-white">₱0.00</p>
+        <div class="flex justify-between mt-2">
+  <span>Total Profit:</span>
+  <span id="bd-profit-total" class="font-bold text-green-400">₱0</span>
+</div>
+
+<div class="flex justify-between">
+  <span>Profit per Unit:</span>
+  <span id="bd-profit-per-unit" class="font-bold text-green-400">₱0</span>
+</div>
         <p class="text-slate-400 text-xs mt-3">Per unit: <span id="bd-price-per-unit" class="text-green-300 font-bold">₱0.00</span></p>
        </div>
       </div>
@@ -1175,6 +1195,7 @@ async function recoverUserAccount() {
         logAudit('Audit log cleared');
         showNotification('Audit log cleared', 'success');
       }
+    }
     
     function handleAdminLogout() {
   signOut(auth);
@@ -1413,48 +1434,84 @@ async function recoverUserAccount() {
     }
 
     function calculateCMYK() {
-      if (!currentYield.c) { alert('Select printer first'); return; }
-      const pages = parseFloat(document.getElementById('pages').value) || 100;
-      const coverage = parseFloat(document.getElementById('coverage').value) / 100 || 0.05;
-      const waste = parseFloat(document.getElementById('waste').value) / 100 || 0.03;
-      const qualityMult = parseFloat(document.getElementById('ink-quality-mult').value) || 1;
-      const cCost = inkCosts.c; const mCost = inkCosts.m; const yCost = inkCosts.y; const kCost = inkCosts.k;
-      if (!cCost || !mCost || !yCost || !kCost) { alert('Add all inks to inventory'); return; }
-      const cStock = parseFloat(document.getElementById('cStock-display').textContent) || 0;
-      const mStock = parseFloat(document.getElementById('mStock-display').textContent) || 0;
-      const yStock = parseFloat(document.getElementById('yStock-display').textContent) || 0;
-      const kStock = parseFloat(document.getElementById('kStock-display').textContent) || 0;
-      // === YIELD BASED CALCULATION ===
-const printer = currentYield;
-const bottleMl = 70; // change if your bottle size is different
 
-const cUsed = (pages / printer.yield.c) * bottleMl * coverage * qualityMult * (1 + waste);
-const mUsed = (pages / printer.yield.m) * bottleMl * coverage * qualityMult * (1 + waste);
-const yUsed = (pages / printer.yield.y) * bottleMl * coverage * qualityMult * (1 + waste);
-const kUsed = (pages / printer.yield.k) * bottleMl * coverage * qualityMult * (1 + waste);
-      const cCostTotal = cUsed * cCost;
-      const mCostTotal = mUsed * mCost;
-      const yCostTotal = yUsed * yCost;
-      const kCostTotal = kUsed * kCost;
-      const total = cCostTotal + mCostTotal + yCostTotal + kCostTotal;
-      lastInkCost = total;
-      lastInkUsage = { c: cUsed, m: mUsed, y: yUsed, k: kUsed };
-      document.getElementById('cmyk-c-cost').textContent = '₱' + fmt(cCostTotal);
-      document.getElementById('cmyk-m-cost').textContent = '₱' + fmt(mCostTotal);
-      document.getElementById('cmyk-y-cost').textContent = '₱' + fmt(yCostTotal);
-      document.getElementById('cmyk-k-cost').textContent = '₱' + fmt(kCostTotal);
-      document.getElementById('cmyk-total-cost').textContent = '₱' + fmt(total);
-      const newCStock = cStock - cUsed;
-      const newMStock = mStock - mUsed;
-      const newYStock = yStock - yUsed;
-      const newKStock = kStock - kUsed;
-      document.getElementById('stock-c').textContent = fmt(newCStock);
-      document.getElementById('stock-m').textContent = fmt(newMStock);
-      document.getElementById('stock-y').textContent = fmt(newYStock);
-      document.getElementById('stock-k').textContent = fmt(newKStock);
-      document.getElementById('calc-total-ink').textContent = '₱' + fmt(total);
-      document.getElementById('cmyk-result').classList.remove('hidden');
-    }
+  if (!currentYield) {
+    alert("Select printer first");
+    return;
+  }
+
+  // ===== INPUTS =====
+  const pages = parseFloat(document.getElementById("pages").value) || 0;
+  const coverage = (parseFloat(document.getElementById("coverage").value) || 5) / 100;
+  const waste = (parseFloat(document.getElementById("waste").value) || 3) / 100;
+  const qualityMult = parseFloat(document.getElementById("ink-quality-mult").value) || 1;
+
+  if (pages <= 0) {
+    alert("Enter valid number of pages");
+    return;
+  }
+
+  // ===== INK COST PER ML =====
+  const cCost = inkCosts.c || 0;
+  const mCost = inkCosts.m || 0;
+  const yCost = inkCosts.y || 0;
+  const kCost = inkCosts.k || 0;
+
+  if (!cCost || !mCost || !yCost || !kCost) {
+    alert("Add all inks to inventory first");
+    return;
+  }
+
+  // ===== STOCK =====
+  const cStock = parseFloat(document.getElementById("cStock-display").textContent) || 0;
+  const mStock = parseFloat(document.getElementById("mStock-display").textContent) || 0;
+  const yStock = parseFloat(document.getElementById("yStock-display").textContent) || 0;
+  const kStock = parseFloat(document.getElementById("kStock-display").textContent) || 0;
+
+  // ===== PRINTER YIELD =====
+  const printer = currentYield; // {c:6500, m:6500, y:6500, k:4000}
+  const bottleMl = 70; // adjust if needed
+
+  // ===== INK USAGE CALCULATION =====
+  const factor = coverage * qualityMult * (1 + waste);
+
+  const cUsed = (pages / printer.c) * bottleMl * factor;
+  const mUsed = (pages / printer.m) * bottleMl * factor;
+  const yUsed = (pages / printer.y) * bottleMl * factor;
+  const kUsed = (pages / printer.k) * bottleMl * factor;
+
+  // ===== CHECK STOCK =====
+  if (cUsed > cStock || mUsed > mStock || yUsed > yStock || kUsed > kStock) {
+    alert("Not enough ink stock");
+    return;
+  }
+
+  // ===== COST CALCULATION =====
+  const cTotal = cUsed * cCost;
+  const mTotal = mUsed * mCost;
+  const yTotal = yUsed * yCost;
+  const kTotal = kUsed * kCost;
+
+  const totalCost = cTotal + mTotal + yTotal + kTotal;
+
+  // ===== DISPLAY COST =====
+  document.getElementById("cmyk-c-cost").textContent = "₱" + fmt(cTotal);
+  document.getElementById("cmyk-m-cost").textContent = "₱" + fmt(mTotal);
+  document.getElementById("cmyk-y-cost").textContent = "₱" + fmt(yTotal);
+  document.getElementById("cmyk-k-cost").textContent = "₱" + fmt(kTotal);
+  document.getElementById("cmyk-total-cost").textContent = "₱" + fmt(totalCost);
+
+  // ===== UPDATE STOCK =====
+  document.getElementById("stock-c").textContent = fmt(cStock - cUsed);
+  document.getElementById("stock-m").textContent = fmt(mStock - mUsed);
+  document.getElementById("stock-y").textContent = fmt(yStock - yUsed);
+  document.getElementById("stock-k").textContent = fmt(kStock - kUsed);
+
+  document.getElementById("calc-total-ink").textContent = "₱" + fmt(totalCost);
+
+  document.getElementById("cmyk-result").classList.remove("hidden");
+
+}
 
     function applyAutomaticStockUpdate() {
       const cStock = parseFloat(document.getElementById('cStock-display').textContent) || 0;
@@ -1513,47 +1570,85 @@ function roundUpToFive(value) {
 }
 
     function performCalculation() {
-      const name = document.getElementById('product-name').value.trim();
-      const qty = parseFloat(document.getElementById('product-qty').value) || 1;
-      const labor = parseFloat(document.getElementById('labor-cost').value) || 0;
-      const overhead = parseFloat(document.getElementById('overhead-cost').value) || 0;
-      const machine = parseFloat(document.getElementById('machine-cost').value) || 0;
-      const taxRate = parseFloat(document.getElementById('tax-rate').value) / 100 || 0;
-      const profitMargin = parseFloat(document.getElementById('profit-margin').value) / 100 || 0.3;
-      let materialCost = 0;
-      costingItems.forEach(c => {
-        let mat, costPerUnit;
-        if (c.type === 'general') {
-          mat = materials[c.idx];
-          costPerUnit = mat ? mat.totalCost / mat.quantity : 0;
-        } else {
-          mat = inkMaterials[c.idx];
-          costPerUnit = mat ? mat.totalCost / mat.totalMl : 0;
-        }
-        materialCost += costPerUnit * c.qty;
-      });
-      const subtotal = materialCost + labor + overhead + machine + lastInkCost + lastElecCost;
-      const tax = subtotal * taxRate;
-      const totalCost = subtotal + tax;
-      const costPerUnit = totalCost / qty;
-      let rawPrice = totalCost / (1 - safeMargin);
-let sellingPrice = roundUpToFive(rawPrice);;
-      const pricePerUnit = sellingPrice / qty;
-      lastCalc = { name, qty, totalCost, costPerUnit, sellingPrice, pricePerUnit, material: materialCost, labor, overhead, machine, ink: lastInkCost, electricity: lastElecCost, subtotal, tax };
-      document.getElementById('bd-material').textContent = '₱' + fmt(materialCost);
-      document.getElementById('bd-labor').textContent = '₱' + fmt(labor);
-      document.getElementById('bd-overhead').textContent = '₱' + fmt(overhead);
-      document.getElementById('bd-machine').textContent = '₱' + fmt(machine);
-      document.getElementById('bd-ink').textContent = '₱' + fmt(lastInkCost);
-      document.getElementById('bd-electricity').textContent = '₱' + fmt(lastElecCost);
-      document.getElementById('bd-subtotal').textContent = '₱' + fmt(subtotal);
-      document.getElementById('bd-tax').textContent = '₱' + fmt(tax);
-      document.getElementById('bd-total-cost').textContent = '₱' + fmt(totalCost);
-      document.getElementById('bd-per-unit').textContent = '₱' + fmt(costPerUnit);
-      document.getElementById('bd-selling-price').textContent = '₱' + fmt(sellingPrice);
-      document.getElementById('bd-price-per-unit').textContent = '₱' + fmt(pricePerUnit);
-      document.getElementById('breakdown-section').classList.remove('hidden');
+
+  const name = document.getElementById('product-name').value.trim();
+  const qty = parseFloat(document.getElementById('product-qty').value) || 1;
+
+  const labor = parseFloat(document.getElementById('labor-cost').value) || 0;
+  const overhead = parseFloat(document.getElementById('overhead-cost').value) || 0;
+  const machine = parseFloat(document.getElementById('machine-cost').value) || 0;
+
+  const taxRate = (parseFloat(document.getElementById('tax-rate').value) || 0) / 100;
+  let profitMargin = (parseFloat(document.getElementById('profit-margin').value) || 30) / 100;
+
+  // Safety protection
+  if (profitMargin >= 0.95) profitMargin = 0.95;
+  if (profitMargin <= 0) profitMargin = 0.01;
+
+  // ===== MATERIAL COST =====
+  let materialCost = 0;
+
+  costingItems.forEach(c => {
+    let mat, costPerUnit;
+
+    if (c.type === 'general') {
+      mat = materials[c.idx];
+      costPerUnit = mat ? mat.totalCost / mat.quantity : 0;
+    } else {
+      mat = inkMaterials[c.idx];
+      costPerUnit = mat ? mat.totalCost / mat.totalMl : 0;
     }
+
+    materialCost += costPerUnit * c.qty;
+  });
+
+  // ===== TOTAL COST =====
+  const subtotal = materialCost + labor + overhead + machine + lastInkCost + lastElecCost;
+  const tax = subtotal * taxRate;
+  const totalCost = subtotal + tax;
+
+  const costPerUnit = totalCost / qty;
+
+  // ===== PROFIT SYSTEM =====
+  const sellingPrice = totalCost / (1 - profitMargin);
+  const pricePerUnit = sellingPrice / qty;
+
+  const profitAmount = sellingPrice - totalCost;
+  const profitPerUnit = profitAmount / qty;
+
+  // Save last calculation
+  lastCalc = {
+    name,
+    qty,
+    totalCost,
+    costPerUnit,
+    sellingPrice,
+    pricePerUnit,
+    profitAmount,
+    profitPerUnit
+  };
+
+  // ===== DISPLAY =====
+  document.getElementById('bd-material').textContent = '₱' + fmt(materialCost);
+  document.getElementById('bd-labor').textContent = '₱' + fmt(labor);
+  document.getElementById('bd-overhead').textContent = '₱' + fmt(overhead);
+  document.getElementById('bd-machine').textContent = '₱' + fmt(machine);
+  document.getElementById('bd-ink').textContent = '₱' + fmt(lastInkCost);
+  document.getElementById('bd-electricity').textContent = '₱' + fmt(lastElecCost);
+  document.getElementById('bd-subtotal').textContent = '₱' + fmt(subtotal);
+  document.getElementById('bd-tax').textContent = '₱' + fmt(tax);
+  document.getElementById('bd-total-cost').textContent = '₱' + fmt(totalCost);
+
+  document.getElementById('bd-per-unit').textContent = '₱' + fmt(costPerUnit);
+  document.getElementById('bd-selling-price').textContent = '₱' + fmt(sellingPrice);
+  document.getElementById('bd-price-per-unit').textContent = '₱' + fmt(pricePerUnit);
+
+  // NEW PROFIT DISPLAY
+  document.getElementById('bd-profit-total').textContent = '₱' + fmt(profitAmount);
+  document.getElementById('bd-profit-per-unit').textContent = '₱' + fmt(profitPerUnit);
+
+  document.getElementById('breakdown-section').classList.remove('hidden');
+}
 
     async function saveProduct() {
       if (!lastCalc) return;
@@ -1790,25 +1885,30 @@ window.handleLogout = async function () {
 // AUTH STATE LISTENER
 // ==========================
 onAuthStateChanged(auth, (user) => {
+
+  const authScreen = document.getElementById("auth-screen");
+  const adminScreen = document.getElementById("admin-screen");
+  const appScreen = document.getElementById("app-screen");
+
   if (user) {
 
-    // If admin
+    authScreen.classList.add("hidden");
+
     if (user.email === ADMIN_EMAIL) {
-      document.getElementById("login-screen").classList.add("hidden");
-      document.getElementById("admin-screen").classList.remove("hidden");
+      adminScreen.classList.remove("hidden");
+      appScreen.classList.add("hidden");
       loadOverviewTab();
-      return;
+    } else {
+      appScreen.classList.remove("hidden");
+      adminScreen.classList.add("hidden");
     }
 
-    // Normal user
-    document.getElementById("login-screen").classList.add("hidden");
-    document.getElementById("calculator-screen").classList.remove("hidden");
-
   } else {
-    // Not logged in
-    document.getElementById("login-screen").classList.remove("hidden");
-    document.getElementById("admin-screen").classList.add("hidden");
-    document.getElementById("calculator-screen").classList.add("hidden");
+
+    authScreen.classList.remove("hidden");
+    adminScreen.classList.add("hidden");
+    appScreen.classList.add("hidden");
+
   }
 });
 
