@@ -1733,12 +1733,26 @@ window.handleLogin = async function () {
   errorEl.classList.add("hidden");
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (err) {
-    errorEl.textContent = err.message;
-    errorEl.classList.remove("hidden");
-  }
-};
+    signInWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+
+    const userEmail = userCredential.user.email;
+    const ADMIN_EMAIL = "admin@rjezmdigital.com";
+
+    document.getElementById("auth-screen").classList.add("hidden");
+
+    if (userEmail === ADMIN_EMAIL) {
+
+      document.getElementById("admin-screen").classList.remove("hidden");
+      loadAdminDashboard();
+
+    } else {
+
+      document.getElementById("app-screen").classList.remove("hidden");
+
+    }
+
+  })
 
 
 
