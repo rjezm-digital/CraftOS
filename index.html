@@ -1010,23 +1010,6 @@
     `${availableCodes.length} available, ${usedCodes.length} used`;
 }
 
-    async function generateCodes() {
-  const num = parseInt(document.getElementById('num-codes').value) || 1;
-
-  try {
-    const { collection, addDoc } =
-      await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-
-    for (let i = 0; i < num; i++) {
-      const code = "CODE-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-      await addDoc(collection(db, "registration_codes"), {
-        code: code,
-        used: false,
-        created_at: new Date()
-      });
-    }
-
     showNotification(`✅ Generated ${num} codes`, "success");
 
   } catch (err) {
@@ -1092,10 +1075,6 @@ async function recoverUserAccount() {
         showNotification('Audit log cleared', 'success');
       }
     }
-    
-    function handleAdminLogout() {
-  signOut(auth);
-}
 
     function showNotification(message, type) {
       const isError = type === "error";
@@ -1658,25 +1637,42 @@ function updateUI() {
       
 import { auth, db } from "./firebase.js";
 
-async function loadOverviewTab() {
+const ADMIN_EMAIL = "admin@rjezmdigital.com";
 
-  const users = [...new Set(allData.map(r => r.user_email).filter(e => e))];
+window.loadOverviewTab = async function () {
+  try {
+    const snapshot = await getDocs(collection(db, "registration_codes"));
 
-  const totalUsers = users.length;
+    let total = 0;
+    let used = 0;
 
-  const totalProducts = allData.filter(r => r.data_type === "product");
-  const totalRevenue = totalProducts.reduce((sum, p) => sum + (p.product_selling || 0), 0);
+    snapshot.forEach(docSnap => {
+      total++;
 
-  const totalCodes = allData.filter(r => r.data_type === "registration_code").length;
-  const usedCodes = allData.filter(r => r.data_type === "registration_code" && r.used).length;
+      const data = docSnap.data();
 
-  document.getElementById("stat-users").textContent = totalUsers;
-  document.getElementById("stat-admins").textContent = 1;
-  document.getElementById("stat-codes").textContent = totalCodes;
-  document.getElementById("stat-used-codes").textContent = usedCodes;
-  document.getElementById("stat-revenue").textContent =
-    "₱" + totalRevenue.toLocaleString();
-}
+      if (data.used === true) {
+        used++;
+      }
+    });
+
+    const available = total - used;
+
+    console.log("TOTAL:", total);
+    console.log("USED:", used);
+    console.log("AVAILABLE:", available);
+
+    document.getElementById("stat-codes").textContent = total;
+    document.getElementById("stat-used-codes").textContent = used;
+
+    // 🔥 IMPORTANT — MAKE SURE THIS ID EXISTS
+    document.getElementById("stat-available-codes").textContent = available;
+
+  } catch (err) {
+    console.error("Overview error:", err);
+  }
+};
+
 
 import {
   createUserWithEmailAndPassword,
@@ -1690,6 +1686,7 @@ import {
   query,
   where,
   getDocs,
+  addDoc,
   updateDoc,
   doc,
   deleteDoc
@@ -1700,9 +1697,7 @@ window.db = db;
 window.doc = doc;
 window.deleteDoc = deleteDoc;
 
-window.switchAdminTab = function(tab) {
-    
-    alert("Switching to: " + tab);
+window.switchAdminTab = async function(tab) {
 
   const tabs = ['overview','users','codes','settings','audit'];
 
@@ -1717,27 +1712,38 @@ window.switchAdminTab = function(tab) {
     button.classList.toggle('tab-inactive', t !== tab);
   });
 
-  if (tab === 'overview') loadOverviewTab?.();
-  if (tab === 'users') loadUsersTab?.();
-  if (tab === 'codes') loadCodesTab?.();
-  if (tab === 'audit') loadAuditTab?.();
+  if (tab === "overview") await loadOverviewTab();
+  if (tab === "users") loadUsersTab();
+  if (tab === "codes") await loadCodesTab();
 };
 
-window.loadOverviewTab = async function() {
-    console.log("Overview loaded");
+window.generateCodes = async function () {
+  try {
+    const numInput = document.getElementById("num-codes");
+    const count = parseInt(numInput.value) || 1;
+
+    for (let i = 0; i < count; i++) {
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      await addDoc(collection(db, "registration_codes"), {
+        code: code,
+        used: false,
+        createdAt: new Date()
+      });
+    }
+
+    alert(count + " code(s) generated successfully!");
+
+    if (typeof loadCodesTab === "function") {
+      loadCodesTab();
+    }
+
+  } catch (error) {
+    console.error("Generate codes error:", error);
+    alert("Error generating codes. Check console.");
+  }
 };
 
-window.loadUsersTab = async function() {
-    console.log("Users loaded");
-};
-
-window.loadCodesTab = async function() {
-    console.log("Codes loaded");
-};
-
-window.loadAuditTab = async function() {
-    console.log("Audit loaded");
-};
 // ==========================
 // SIGNUP WITH REG CODE
 // ==========================
@@ -1806,13 +1812,12 @@ window.handleLogin = async function () {
 
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userEmail = userCredential.user.email;
-    const ADMIN_EMAIL = "admin@rjezmdigital.com";
-
+    
     document.getElementById("auth-screen").classList.add("hidden");
 
     if (userEmail === ADMIN_EMAIL) {
       document.getElementById("admin-screen").classList.remove("hidden");
-      loadAdminDashboard();
+      loadOverviewTab();
     } else {
       document.getElementById("app-screen").classList.remove("hidden");
     }
@@ -1828,6 +1833,9 @@ window.handleLogin = async function () {
 // LOGOUT
 // ==========================
 window.handleLogout = async function () {
+  await signOut(auth);
+};
+window.handleAdminLogout = async function () {
   await signOut(auth);
 };
 
@@ -1863,6 +1871,49 @@ onAuthStateChanged(auth, (user) => {
 
   }
 });
+
+window.loadCodesTab = async function () {
+  try {
+    const snapshot = await getDocs(collection(db, "registration_codes"));
+
+    const list = document.getElementById("codes-list");
+    const countEl = document.getElementById("codes-count");
+
+    if (!list || !countEl) return;
+
+    list.innerHTML = "";
+
+    if (snapshot.empty) {
+      list.innerHTML = `
+        <p class="text-slate-500 text-center py-6">
+          No codes generated yet.
+        </p>
+      `;
+      countEl.textContent = "0 codes";
+      return;
+    }
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+
+      list.innerHTML += `
+        <div class="bg-slate-700/40 p-3 rounded-lg flex justify-between items-center">
+          <div>
+            <p class="font-bold text-white">${data.code}</p>
+            <p class="text-sm text-slate-400">
+              ${data.used ? "Used" : "Available"}
+            </p>
+          </div>
+        </div>
+      `;
+    });
+
+    countEl.textContent = snapshot.size + " codes";
+
+  } catch (error) {
+    console.error("Load codes error:", error);
+  }
+};
 
 </script>
  </body>
