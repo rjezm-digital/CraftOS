@@ -1748,9 +1748,6 @@ window.generateCodes = async function () {
 // SIGNUP WITH REG CODE
 // ==========================
 window.handleCodeSignup = async function () {
-  alert("Create button clicked");
-};
-
   const email = document.getElementById("code-email").value.trim();
   const password = document.getElementById("code-password").value.trim();
   const codeInput = document.getElementById("code-input").value.trim().toUpperCase();
@@ -1759,40 +1756,46 @@ window.handleCodeSignup = async function () {
   errorEl.classList.add("hidden");
 
   if (!email || !password || !codeInput) {
-    errorEl.textContent = "Please fill in all fields";
+    errorEl.textContent = "Please fill in all fields.";
     errorEl.classList.remove("hidden");
     return;
   }
 
   try {
-    // Check registration code in Firestore
+    // 🔍 Find code in Firestore
     const q = query(
       collection(db, "registration_codes"),
       where("code", "==", codeInput),
       where("used", "==", false)
     );
 
-    const snapshot = await getDocs(q);
+    const querySnapshot = await getDocs(q);
 
-    if (snapshot.empty) {
-      errorEl.textContent = "Invalid or already used code";
+    if (querySnapshot.empty) {
+      errorEl.textContent = "Invalid or already used registration code.";
       errorEl.classList.remove("hidden");
       return;
     }
 
-    // Create user
-    await createUserWithEmailAndPassword(auth, email, password);
+    // 🔐 Create Firebase Auth user
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-    // Mark code as used
-    const codeDoc = snapshot.docs[0];
-    await updateDoc(doc(db, "registration_codes", codeDoc.id), {
+    // 🏷 Mark code as used
+    const codeDoc = querySnapshot.docs[0];
+    await updateDoc(codeDoc.ref, {
       used: true,
-      used_by: email,
+      used_by: user.email,
       used_at: new Date()
     });
 
-  } catch (err) {
-    errorEl.textContent = err.message;
+    alert("Account created successfully!");
+
+    switchToLogin();
+
+  } catch (error) {
+    console.error(error);
+    errorEl.textContent = error.message;
     errorEl.classList.remove("hidden");
   }
 };
