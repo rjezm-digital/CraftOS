@@ -71,16 +71,6 @@
       </div><button onclick="handleCodeSignup()" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg">Create Account</button>
       <p class="text-center text-slate-400 text-sm">Have an account? <button onclick="switchToLogin()" class="text-cyan-400 hover:text-cyan-300 font-bold transition">Sign in</button></p>
       <div id="code-signup-error" class="hidden bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg text-sm text-center"></div>
-     </div><!-- ADMIN LOGIN -->
-<div class="mt-6 pt-6 border-t border-slate-700/50 text-center">
-  <button
-    type="button"
-    onclick="openAdminPanel()"
-    class="text-purple-400 hover:text-purple-300 font-bold text-sm transition"
-  >
-    🔐 Admin Access
-  </button>
-</div>      
     </div>
     </div>
    </div>
@@ -868,17 +858,6 @@
       if (!result.isOk) console.error('Delete error:', result.error);
       return result;
     }
-    
-function openAdminPanel() {
-
-  if (!auth.currentUser) {
-    alert("Please sign in first.");
-    return;
-  }
-
-  const ADMIN_EMAIL = "admin@rjezmdigital.com";
-
-  if (auth.currentUser.email === ADMIN_EMAIL) {
 
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.add("hidden");
@@ -1726,7 +1705,7 @@ function updateUI() {
 }
   </script>
   <script type="module">
-      
+      const ADMIN_EMAIL = "admin@rjezmdigital.com";
   try {
 
     // === GET DATA FROM FIRESTORE ===
@@ -1853,26 +1832,13 @@ window.handleLogin = async function () {
   errorEl.classList.add("hidden");
 
   try {
-
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const userEmail = userCredential.user.email;
-    const ADMIN_EMAIL = "admin@rjezmdigital.com";
-
-    document.getElementById("auth-screen").classList.add("hidden");
-
-    if (userEmail === ADMIN_EMAIL) {
-      document.getElementById("admin-screen").classList.remove("hidden");
-      loadAdminDashboard();
-    } else {
-      document.getElementById("app-screen").classList.remove("hidden");
-    }
-
+    await signInWithEmailAndPassword(auth, email, password);
+    // UI routing handled by onAuthStateChanged
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove("hidden");
   }
 };
-
 
 // ==========================
 // LOGOUT
@@ -1892,28 +1858,24 @@ onAuthStateChanged(auth, (user) => {
   const adminScreen = document.getElementById("admin-screen");
   const appScreen = document.getElementById("app-screen");
 
-  const ADMIN_EMAIL = "admin@rjezmdigital.com";
-
-  if (user) {
-
-    authScreen.classList.add("hidden");
-
-    if (user.email === ADMIN_EMAIL) {
-      adminScreen.classList.remove("hidden");
-      appScreen.classList.add("hidden");
-      loadAdminDashboard();
-    } else {
-      appScreen.classList.remove("hidden");
-      adminScreen.classList.add("hidden");
-    }
-
-  } else {
-
+  if (!user) {
     authScreen.classList.remove("hidden");
     adminScreen.classList.add("hidden");
     appScreen.classList.add("hidden");
-
+    return;
   }
+
+  authScreen.classList.add("hidden");
+
+  if (user.email === ADMIN_EMAIL) {
+    adminScreen.classList.remove("hidden");
+    appScreen.classList.add("hidden");
+    loadAdminDashboard();
+  } else {
+    appScreen.classList.remove("hidden");
+    adminScreen.classList.add("hidden");
+  }
+
 });
 </script>
  </body>
