@@ -1192,17 +1192,6 @@ async function recoverUserAccount() {
   showNotification("⚠️ Use Firebase password reset instead", "error");
 }
 
-      async function recoverUserAccount() {
-  const email = document.getElementById('recovery-email').value.trim();
-  const newPassword = document.getElementById('recovery-password').value.trim();
-
-  if (!email || !newPassword) {
-    showNotification("Please fill in all fields", "error");
-    return;
-  }
-
-  showNotification("⚠️ Use Firebase password reset instead", "error");
-}
     function saveBrandingSettings() {
       const company = document.getElementById('company-name').value || 'RJEZM DIGITAL';
       const tagline = document.getElementById('company-tagline').value || 'Professional Print Solutions';
