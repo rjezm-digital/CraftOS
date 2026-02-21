@@ -71,6 +71,16 @@
       </div><button onclick="handleCodeSignup()" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg">Create Account</button>
       <p class="text-center text-slate-400 text-sm">Have an account? <button onclick="switchToLogin()" class="text-cyan-400 hover:text-cyan-300 font-bold transition">Sign in</button></p>
       <div id="code-signup-error" class="hidden bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg text-sm text-center"></div>
+     </div><!-- ADMIN LOGIN -->
+<div class="mt-6 pt-6 border-t border-slate-700/50 text-center">
+  <button
+    type="button"
+    onclick="openAdminPanel()"
+    class="text-purple-400 hover:text-purple-300 font-bold text-sm transition"
+  >
+    🔐 Admin Access
+  </button>
+</div>      
     </div>
     </div>
    </div>
@@ -859,17 +869,6 @@
       return result;
     }
 
-    document.getElementById("auth-screen").classList.add("hidden");
-    document.getElementById("app-screen").classList.add("hidden");
-    document.getElementById("admin-screen").classList.remove("hidden");
-
-    loadAdminDashboard();
-
-  } else {
-    alert("Access denied. Admin only.");
-  }
-}
-
     function refreshUserData() {
       materials = [];
       inkMaterials = [];
@@ -915,21 +914,6 @@
       document.getElementById('admin-modal-error').classList.add('hidden');
     }
 
-    function switchAdminTab(tab) {
-      ['overview', 'users', 'codes', 'settings', 'audit'].forEach(t => {
-        document.getElementById(`admin-content-${t}`).classList.toggle('hidden', t !== tab);
-        document.getElementById(`admin-tab-${t}`).classList.toggle('tab-active', t === tab);
-        document.getElementById(`admin-tab-${t}`).classList.toggle('tab-inactive', t !== tab);
-      });
-      if (tab === 'users') loadUsersTab();
-      if (tab === 'codes') loadCodesTab();
-      if (tab === 'audit') loadAuditTab();
-    }
-    
-    function loadAdminDashboard() {
-      loadOverviewTab();
-    }
-
     function loadUsersTab() {
       const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
       const searchTerm = document.getElementById('user-search').value.toLowerCase();
@@ -952,41 +936,9 @@
         const userCodeRecord = allData.find(r => r.data_type === 'registration_code' && r.used_by === email);
         const userCode = userCodeRecord ? userCodeRecord.code : 'N/A';
 
-        return `
-          <div class="bg-slate-700/40 rounded-lg p-4 border border-slate-600/50 card-hover">
-            <div class="flex justify-between items-start gap-4">
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-2">
-                  <h4 class="text-white font-bold text-lg">👤 ${email}</h4>
-                  <span class="text-xs font-mono bg-purple-500/30 text-purple-300 px-2 py-1 rounded border border-purple-500/50">Code: ${userCode}</span>
-                </div>
-                <p class="text-slate-400 text-xs mb-3">📧 ${email}</p>
-                <div class="grid grid-cols-4 gap-3 mt-3">
-                  <div class="bg-slate-700/30 rounded p-2 text-center">
-                    <p class="text-slate-400 text-xs font-bold">Products</p>
-                    <p class="text-white font-bold text-lg">${userProducts}</p>
-                  </div>
-                  <div class="bg-slate-700/30 rounded p-2 text-center">
-                    <p class="text-slate-400 text-xs font-bold">Materials</p>
-                    <p class="text-white font-bold text-lg">${userMaterials}</p>
-                  </div>
-                  <div class="bg-slate-700/30 rounded p-2 text-center">
-                    <p class="text-slate-400 text-xs font-bold">Inks</p>
-                    <p class="text-white font-bold text-lg">${userInks}</p>
-                  </div>
-                  <div class="bg-slate-700/30 rounded p-2 text-center">
-                    <p class="text-slate-400 text-xs font-bold">Revenue</p>
-                    <p class="text-white font-bold text-lg">₱${fmt(totalRevenue)}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="flex flex-col gap-2 flex-shrink-0">
-                <button onclick="copyUserCode('${userCode}')" class="bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 px-3 py-1 rounded text-xs font-bold transition">📋 Copy Code</button>
-                <button onclick="deleteUser('${email}')" class="bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-1 rounded text-xs font-bold transition">🗑️ Delete</button>
-              </div>
             </div>
           </div>
-        `;
+        ;
       }).join('');
     }
 
@@ -1089,7 +1041,7 @@
     await deleteDoc(doc(window.db, "registration_codes", codeId));
     showNotification("Code deleted", "success");
     loadCodesTab();
-    loadOverviewTab();
+        loadOverviewTab();
   } catch (err) {
     showNotification(err.message, "error");
   }
@@ -1690,8 +1642,6 @@ function roundUpToFive(value) {
     }
 
     document.getElementById('user-search')?.addEventListener('input', loadUsersTab);
-    
-    document.getElementById('user-search')?.addEventListener('input', loadUsersTab);
 
 function updateUI() {
   renderInkMaterials();
@@ -1705,12 +1655,28 @@ function updateUI() {
 }
   </script>
   <script type="module">
-
-/* ==============================
-   FIREBASE IMPORTS
-============================== */
-
+      
 import { auth, db } from "./firebase.js";
+
+async function loadOverviewTab() {
+
+  const users = [...new Set(allData.map(r => r.user_email).filter(e => e))];
+
+  const totalUsers = users.length;
+
+  const totalProducts = allData.filter(r => r.data_type === "product");
+  const totalRevenue = totalProducts.reduce((sum, p) => sum + (p.product_selling || 0), 0);
+
+  const totalCodes = allData.filter(r => r.data_type === "registration_code").length;
+  const usedCodes = allData.filter(r => r.data_type === "registration_code" && r.used).length;
+
+  document.getElementById("stat-users").textContent = totalUsers;
+  document.getElementById("stat-admins").textContent = 1;
+  document.getElementById("stat-codes").textContent = totalCodes;
+  document.getElementById("stat-used-codes").textContent = usedCodes;
+  document.getElementById("stat-revenue").textContent =
+    "₱" + totalRevenue.toLocaleString();
+}
 
 import {
   createUserWithEmailAndPassword,
@@ -1727,219 +1693,54 @@ import {
   updateDoc,
   doc,
   deleteDoc
+  
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* =================================
-   ADMIN DASHBOARD SYSTEM (CLEAN)
-================================= */
-
-const adminTabs = ["overview", "users", "codes", "settings", "audit"];
-
-function switchAdminTab(tab) {
-
-  adminTabs.forEach(t => {
-    document.getElementById(`admin-content-${t}`).classList.add("hidden");
-    document.getElementById(`admin-tab-${t}`).classList.remove("bg-cyan-600");
-  });
-
-  document.getElementById(`admin-content-${tab}`).classList.remove("hidden");
-  document.getElementById(`admin-tab-${tab}`).classList.add("bg-cyan-600");
-
-  if (tab === "overview") loadOverviewTab();
-  if (tab === "users") loadUsersTab();
-  if (tab === "codes") loadCodesTab();
-  if (tab === "audit") loadAuditTab();
-}
-
-/* =================================
-   BUTTON EVENT LISTENERS
-================================= */
-
-document.getElementById("admin-tab-overview")
-  .addEventListener("click", () => switchAdminTab("overview"));
-
-document.getElementById("admin-tab-users")
-  .addEventListener("click", () => switchAdminTab("users"));
-
-document.getElementById("admin-tab-codes")
-  .addEventListener("click", () => switchAdminTab("codes"));
-
-document.getElementById("admin-tab-settings")
-  .addEventListener("click", () => switchAdminTab("settings"));
-
-document.getElementById("admin-tab-audit")
-  .addEventListener("click", () => switchAdminTab("audit"));
-
-/* =================================
-   LOAD OVERVIEW
-================================= */
-
-async function loadOverviewTab() {
-
-  try {
-
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    const codesSnapshot = await getDocs(collection(db, "registration_codes"));
-    const ordersSnapshot = await getDocs(collection(db, "orders"));
-
-    const totalUsers = usersSnapshot.size;
-    const totalCodes = codesSnapshot.size;
-    const usedCodes = codesSnapshot.docs.filter(d => d.data().used === true).length;
-
-    let totalRevenue = 0;
-    ordersSnapshot.forEach(doc => {
-      totalRevenue += doc.data().total || 0;
-    });
-
-    document.getElementById("stat-users").textContent = totalUsers;
-    document.getElementById("stat-codes").textContent = totalCodes;
-    document.getElementById("stat-used-codes").textContent = usedCodes;
-    document.getElementById("stat-revenue").textContent =
-      "₱" + totalRevenue.toLocaleString();
-
-  } catch (error) {
-    console.error("Overview error:", error);
-  }
-}
-
-/* =================================
-   LOAD USERS
-================================= */
-
-async function loadUsersTab() {
-
-  const list = document.getElementById("users-detail-list");
-  list.innerHTML = "";
-
-  const snapshot = await getDocs(collection(db, "users"));
-
-  snapshot.forEach(docSnap => {
-
-    const data = docSnap.data();
-
-    const row = document.createElement("div");
-    row.className = "p-3 border-b flex justify-between";
-
-    row.innerHTML = `
-      <span>${data.email}</span>
-      <button class="text-red-400" data-id="${docSnap.id}">
-        Delete
-      </button>
-    `;
-
-    row.querySelector("button").addEventListener("click", async () => {
-      await deleteDoc(doc(db, "users", docSnap.id));
-      loadUsersTab();
-    });
-
-    list.appendChild(row);
-  });
-}
-
-/* =================================
-   LOAD CODES
-================================= */
-
-async function loadCodesTab() {
-
-  const list = document.getElementById("codes-detail-list");
-  list.innerHTML = "";
-
-  const snapshot = await getDocs(collection(db, "registration_codes"));
-
-  snapshot.forEach(docSnap => {
-
-    const data = docSnap.data();
-
-    const row = document.createElement("div");
-    row.className = "p-3 border-b flex justify-between";
-
-    row.innerHTML = `
-      <span>${data.code} ${data.used ? "(USED)" : ""}</span>
-      <button class="text-red-400" data-id="${docSnap.id}">
-        Delete
-      </button>
-    `;
-
-    row.querySelector("button").addEventListener("click", async () => {
-      await deleteDoc(doc(db, "registration_codes", docSnap.id));
-      loadCodesTab();
-    });
-
-    list.appendChild(row);
-  });
-}
-
-/* =================================
-   LOAD AUDIT
-================================= */
-
-function loadAuditTab() {
-  console.log("Audit loaded");
-}
-
-/* =================================
-   AUTO LOAD OVERVIEW WHEN ADMIN OPENS
-================================= */
-
-window.loadAdminDashboard = function () {
-  switchAdminTab("overview");
-};
-
-/* ==============================
-   GLOBALS
-============================== */
-
-const ADMIN_EMAIL = "admin@rjezmdigital.com";
 
 window.db = db;
 window.doc = doc;
 window.deleteDoc = deleteDoc;
 
-/* ==============================
-   LOAD ADMIN OVERVIEW
-============================== */
+window.switchAdminTab = function(tab) {
+    
+    alert("Switching to: " + tab);
 
-async function loadOverviewTab() {
+  const tabs = ['overview','users','codes','settings','audit'];
 
-  try {
+  tabs.forEach(t => {
+    const content = document.getElementById(`admin-content-${t}`);
+    const button = document.getElementById(`admin-tab-${t}`);
 
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    const codesSnapshot = await getDocs(collection(db, "registration_codes"));
-    const ordersSnapshot = await getDocs(collection(db, "orders"));
+    if (!content || !button) return;
 
-    const totalUsers = usersSnapshot.size;
-    const totalCodes = codesSnapshot.size;
+    content.classList.toggle('hidden', t !== tab);
+    button.classList.toggle('tab-active', t === tab);
+    button.classList.toggle('tab-inactive', t !== tab);
+  });
 
-    const usedCodes = codesSnapshot.docs.filter(d => d.data().used === true).length;
+  if (tab === 'overview') loadOverviewTab?.();
+  if (tab === 'users') loadUsersTab?.();
+  if (tab === 'codes') loadCodesTab?.();
+  if (tab === 'audit') loadAuditTab?.();
+};
 
-    const admins = usersSnapshot.docs.filter(d =>
-      d.data().email === ADMIN_EMAIL
-    ).length;
+window.loadOverviewTab = async function() {
+    console.log("Overview loaded");
+};
 
-    let totalRevenue = 0;
-    ordersSnapshot.forEach(doc => {
-      totalRevenue += doc.data().total || 0;
-    });
+window.loadUsersTab = async function() {
+    console.log("Users loaded");
+};
 
-    document.getElementById("stat-users").textContent = totalUsers;
-    document.getElementById("stat-admins").textContent = admins;
-    document.getElementById("stat-codes").textContent = totalCodes;
-    document.getElementById("stat-used-codes").textContent = usedCodes;
-    document.getElementById("stat-revenue").textContent =
-      "₱" + totalRevenue.toLocaleString();
+window.loadCodesTab = async function() {
+    console.log("Codes loaded");
+};
 
-  } catch (error) {
-    console.error("Overview load error:", error);
-  }
-}
-
-window.loadAdminDashboard = loadOverviewTab;
-
-/* ==============================
-   SIGNUP WITH REG CODE
-============================== */
-
+window.loadAuditTab = async function() {
+    console.log("Audit loaded");
+};
+// ==========================
+// SIGNUP WITH REG CODE
+// ==========================
 window.handleCodeSignup = async function () {
 
   const email = document.getElementById("code-email").value.trim();
@@ -1956,7 +1757,7 @@ window.handleCodeSignup = async function () {
   }
 
   try {
-
+    // Check registration code in Firestore
     const q = query(
       collection(db, "registration_codes"),
       where("code", "==", codeInput),
@@ -1971,10 +1772,11 @@ window.handleCodeSignup = async function () {
       return;
     }
 
+    // Create user
     await createUserWithEmailAndPassword(auth, email, password);
 
+    // Mark code as used
     const codeDoc = snapshot.docs[0];
-
     await updateDoc(doc(db, "registration_codes", codeDoc.id), {
       used: true,
       used_by: email,
@@ -1988,10 +1790,10 @@ window.handleCodeSignup = async function () {
 };
 
 
-/* ==============================
-   LOGIN
-============================== */
 
+// ==========================
+// LOGIN
+// ==========================
 window.handleLogin = async function () {
 
   const email = document.getElementById("login-email").value.trim();
@@ -2001,7 +1803,20 @@ window.handleLogin = async function () {
   errorEl.classList.add("hidden");
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userEmail = userCredential.user.email;
+    const ADMIN_EMAIL = "admin@rjezmdigital.com";
+
+    document.getElementById("auth-screen").classList.add("hidden");
+
+    if (userEmail === ADMIN_EMAIL) {
+      document.getElementById("admin-screen").classList.remove("hidden");
+      loadAdminDashboard();
+    } else {
+      document.getElementById("app-screen").classList.remove("hidden");
+    }
+
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove("hidden");
@@ -2009,47 +1824,44 @@ window.handleLogin = async function () {
 };
 
 
-/* ==============================
-   LOGOUT
-============================== */
-
+// ==========================
+// LOGOUT
+// ==========================
 window.handleLogout = async function () {
   await signOut(auth);
 };
 
-window.handleAdminLogout = async function () {
-  await signOut(auth);
-};
 
 
-/* ==============================
-   AUTH STATE LISTENER
-============================== */
-
+// ==========================
+// AUTH STATE LISTENER
+// ==========================
 onAuthStateChanged(auth, (user) => {
 
   const authScreen = document.getElementById("auth-screen");
   const adminScreen = document.getElementById("admin-screen");
   const appScreen = document.getElementById("app-screen");
 
-  if (!user) {
+  if (user) {
+
+    authScreen.classList.add("hidden");
+
+    if (user.email === ADMIN_EMAIL) {
+      adminScreen.classList.remove("hidden");
+      appScreen.classList.add("hidden");
+      loadOverviewTab();
+    } else {
+      appScreen.classList.remove("hidden");
+      adminScreen.classList.add("hidden");
+    }
+
+  } else {
+
     authScreen.classList.remove("hidden");
     adminScreen.classList.add("hidden");
     appScreen.classList.add("hidden");
-    return;
+
   }
-
-  authScreen.classList.add("hidden");
-
-  if (user.email === ADMIN_EMAIL) {
-    adminScreen.classList.remove("hidden");
-    appScreen.classList.add("hidden");
-    loadOverviewTab();
-  } else {
-    appScreen.classList.remove("hidden");
-    adminScreen.classList.add("hidden");
-  }
-
 });
 
 </script>
