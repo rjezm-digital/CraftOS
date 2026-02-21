@@ -951,41 +951,6 @@ function openAdminPanel() {
       loadOverviewTab();
     }
 
-    async function loadOverviewTab() {
-  const usersSnapshot = await getDocs(collection(db, "users"));
-  const codesSnapshot = await getDocs(collection(db, "registration_codes"));
-  const ordersSnapshot = await getDocs(collection(db, "orders"));
-
-  const totalUsers = usersSnapshot.size;
-
-  const admins = usersSnapshot.docs.filter(
-    doc => doc.data().email === ADMIN_EMAIL
-  ).length;
-
-  const totalCodes = codesSnapshot.size;
-
-  const usedCodes = codesSnapshot.docs.filter(
-    doc => doc.data().used === true
-  ).length;
-
-  let totalRevenue = 0;
-  ordersSnapshot.forEach(doc => {
-    totalRevenue += doc.data().total || 0;
-  });
-
-  document.getElementById("stat-users").textContent = totalUsers;
-  document.getElementById("stat-admins").textContent = admins;
-  document.getElementById("stat-codes").textContent = totalCodes;
-  document.getElementById("stat-used-codes").textContent = usedCodes;
-  document.getElementById("stat-revenue").textContent =
-    "₱" + totalRevenue.toLocaleString();
-}
-
-      document.getElementById('active-this-week').textContent = activeThisWeek;
-      document.getElementById('idle-users').textContent = idleUsers;
-      document.getElementById('new-users-month').textContent = newUsersThisMonth;
-    }
-
     function loadUsersTab() {
       const users = [...new Set(allData.map(r => r.user_email).filter(e => e && e !== "admin"))];
       const searchTerm = document.getElementById('user-search').value.toLowerCase();
@@ -1762,6 +1727,51 @@ function updateUI() {
   </script>
   <script type="module">
       
+      import { auth, db } from "./firebase.js";
+import { collection, getDocs }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const ADMIN_EMAIL = "admin@rjezmdigital.com";
+
+      async function loadOverviewTab() {
+
+  try {
+
+    // === GET DATA FROM FIRESTORE ===
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    const codesSnapshot = await getDocs(collection(db, "registration_codes"));
+    const ordersSnapshot = await getDocs(collection(db, "orders"));
+
+    const totalUsers = usersSnapshot.size;
+    const totalCodes = codesSnapshot.size;
+
+    const usedCodes = codesSnapshot.docs.filter(doc => 
+      doc.data().used === true
+    ).length;
+
+    // Count Admins
+    const admins = usersSnapshot.docs.filter(doc =>
+      doc.data().email === ADMIN_EMAIL
+    ).length;
+
+    // Calculate Total Revenue
+    let totalRevenue = 0;
+    ordersSnapshot.forEach(doc => {
+      totalRevenue += doc.data().total || 0;
+    });
+
+    // === UPDATE UI ===
+    document.getElementById("stat-users").textContent = totalUsers;
+    document.getElementById("stat-admins").textContent = admins;
+    document.getElementById("stat-codes").textContent = totalCodes;
+    document.getElementById("stat-used-codes").textContent = usedCodes;
+    document.getElementById("stat-revenue").textContent =
+      "₱" + totalRevenue.toLocaleString();
+
+  } catch (error) {
+    console.error("Overview load error:", error);
+  }
+}
 import { auth, db } from "./firebase.js";
 
 import {
