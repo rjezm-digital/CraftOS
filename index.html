@@ -1733,27 +1733,25 @@ window.handleLogin = async function () {
   errorEl.classList.add("hidden");
 
   try {
-    signInWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
 
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userEmail = userCredential.user.email;
     const ADMIN_EMAIL = "admin@rjezmdigital.com";
 
     document.getElementById("auth-screen").classList.add("hidden");
 
     if (userEmail === ADMIN_EMAIL) {
-
       document.getElementById("admin-screen").classList.remove("hidden");
       loadAdminDashboard();
-
     } else {
-
       document.getElementById("app-screen").classList.remove("hidden");
-
     }
 
-  })
-
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.remove("hidden");
+  }
+};
 
 
 // ==========================
@@ -1769,17 +1767,25 @@ window.handleLogout = async function () {
 // AUTH STATE LISTENER
 // ==========================
 onAuthStateChanged(auth, (user) => {
+
   if (user) {
 
-    // 🔥 IMPORTANT — set global current user
     currentUser = user.email;
-
     document.getElementById("auth-screen").classList.add("hidden");
-    document.getElementById("app-screen").classList.remove("hidden");
-    document.getElementById("user-email").textContent = user.email;
 
-    refreshUserData();
-    updateUI();
+    const ADMIN_EMAIL = "admin@rjezmdigital.com";
+
+    if (user.email === ADMIN_EMAIL) {
+      document.getElementById("admin-screen").classList.remove("hidden");
+      document.getElementById("app-screen").classList.add("hidden");
+      loadAdminDashboard();
+    } else {
+      document.getElementById("app-screen").classList.remove("hidden");
+      document.getElementById("admin-screen").classList.add("hidden");
+      document.getElementById("user-email").textContent = user.email;
+      refreshUserData();
+      updateUI();
+    }
 
   } else {
 
@@ -1787,7 +1793,9 @@ onAuthStateChanged(auth, (user) => {
 
     document.getElementById("auth-screen").classList.remove("hidden");
     document.getElementById("app-screen").classList.add("hidden");
+    document.getElementById("admin-screen").classList.add("hidden");
   }
+
 });
 
 
