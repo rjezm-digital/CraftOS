@@ -823,6 +823,12 @@
     
     function openAdminPanel() {
 
+  document.getElementById("auth-screen").classList.add("hidden");
+  document.getElementById("app-screen").classList.add("hidden");
+  document.getElementById("admin-screen").classList.remove("hidden");
+
+}
+
   if (!currentUser) {
     alert("You must be logged in.");
     return;
