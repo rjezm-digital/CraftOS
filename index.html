@@ -823,18 +823,21 @@
     
 function openAdminPanel() {
 
-  if (!currentUser) {
-    alert("You must be logged in.");
+  if (!auth.currentUser) {
+    alert("Please sign in first.");
     return;
   }
 
   const ADMIN_EMAIL = "admin@rjezmdigital.com";
 
-  if (currentUser === ADMIN_EMAIL) {
+  if (auth.currentUser.email === ADMIN_EMAIL) {
+
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.add("hidden");
     document.getElementById("admin-screen").classList.remove("hidden");
+
     loadAdminDashboard();
+
   } else {
     alert("Access denied. Admin only.");
   }
