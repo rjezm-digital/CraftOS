@@ -80,7 +80,7 @@
   >
     🔐 Admin Access
   </button>
-</div>
+</div>      
     </div>
     </div>
    </div>
@@ -864,8 +864,7 @@
       document.getElementById("receiptDate").innerText = new Date().toLocaleString();
       auditLog = JSON.parse(localStorage.getItem('rjezm_audit_log') || '[]');
       });
-    });
-
+      
     function switchToSignup() {
       document.getElementById('login-form').classList.add('hidden');
       document.getElementById('code-signup-form').classList.remove('hidden');
@@ -896,17 +895,7 @@
       if (tab === 'codes') loadCodesTab();
       if (tab === 'audit') loadAuditTab();
     }
-    function openAdminLogin() {
-  const pass = prompt("Enter Admin Password:");
-
-  if (pass === "lilastronaut") {   // your current admin password
-    document.getElementById("admin-screen").classList.remove("hidden");
-    document.getElementById("app-screen").classList.add("hidden");
-  } else {
-    alert("Incorrect password");
-  }
-}
-
+    
     function loadAdminDashboard() {
       loadOverviewTab();
     }
