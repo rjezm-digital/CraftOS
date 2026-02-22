@@ -1,11 +1,15 @@
-window.currentUser = null;
+export let currentUser = null;
 
-window.materials = [];
-window.inkMaterials = [];
-window.costingItems = [];
-window.products = [];
+export let materials = [];
+export let inkMaterials = [];
+export let costingItems = [];
+export let products = [];
 
-window.lastInkCost = 0;
-window.lastElecCost = 0;
+export let lastCalc = null;
+export let lastInkCost = 0;
+export let lastElecCost = 0;
 
-window.lastInkUsage = { c:0, m:0, y:0, k:0 };
+export let inkCosts = { c: 0, m: 0, y: 0, k: 0 };
+export let maxStockLevels = { c: 0, m: 0, y: 0, k: 0 };
+
+export const fmt = n => (parseFloat(n || 0)).toFixed(2);

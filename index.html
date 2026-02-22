@@ -98,6 +98,66 @@
       </div>
     </div>
   </section>
+  
+  <!-- ================= RECEIPT TAB ================= -->
+<div id="content-receipt"
+     class="tab-content bg-slate-800/40 rounded-2xl p-6 border border-slate-700/50 backdrop-blur space-y-6 hidden">
+
+  <h2 class="text-2xl font-bold text-white mb-4">🧾 Receipt</h2>
+
+  <!-- RECEIPT PREVIEW -->
+  <div class="bg-slate-900 rounded-xl p-6 border border-slate-700/50 space-y-4">
+
+    <div class="text-center border-b border-slate-700 pb-4">
+      <h3 class="text-xl font-bold text-cyan-400">RJEZM DIGITAL</h3>
+      <p class="text-xs text-slate-400">Print Cost Calculator</p>
+    </div>
+
+    <div class="space-y-2 text-sm text-slate-300">
+      <div class="flex justify-between">
+        <span>Quantity</span>
+        <span id="receipt-qty">–</span>
+      </div>
+
+      <div class="flex justify-between">
+        <span>Total Cost</span>
+        <span id="receipt-total">–</span>
+      </div>
+
+      <div class="flex justify-between">
+        <span>Selling Price</span>
+        <span id="receipt-selling">–</span>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-700 pt-4 text-sm text-slate-400 text-center">
+      Thank you for your business
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="flex flex-wrap gap-3">
+    <button
+      onclick="updateReceipt()"
+      class="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-4 py-2 rounded-lg">
+      🔄 Update Receipt
+    </button>
+
+    <button
+      onclick="printReceipt()"
+      class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-lg">
+      🖨 Print
+    </button>
+
+    <button
+      onclick="exportPDF()"
+      class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-lg">
+      📄 Export PDF
+    </button>
+  </div>
+
+</div>
+<!-- ================= END RECEIPT TAB ================= -->
 
   <!-- ================= FOOTER ================= -->
   <footer class="border-t border-slate-800 bg-slate-900 py-4 px-4">
