@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RJEZM DIGITAL – Print Cost Calculator</title>
+
+  <!-- Tailwind CDN (REQUIRED) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Your custom styles (RELATIVE PATH – GitHub Pages safe) -->
+  <link rel="stylesheet" href="./app.css" />
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
+
+  <!-- ================= LOGIN SCREEN ================= -->
+  <section
+    id="login-screen"
+    class="min-h-screen flex items-center justify-center"
+  >
+    <div class="w-full max-w-md bg-slate-900/80 backdrop-blur rounded-2xl shadow-xl p-8">
+      
+      <div class="text-center mb-6">
+        <div class="mx-auto mb-4 h-14 w-14 rounded-xl bg-cyan-400/20 flex items-center justify-center">
+          <div class="h-6 w-6 rotate-45 bg-cyan-400"></div>
+        </div>
+        <h1 class="text-2xl font-bold tracking-wide text-cyan-400">
+          RJEZM DIGITAL
+        </h1>
+        <p class="text-sm text-slate-400">Print Cost Calculator</p>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="login-form" class="space-y-4">
+        <div>
+          <label class="text-sm text-slate-400">Email</label>
+          <input
+            id="login-email"
+            type="email"
+            placeholder="your@email.com"
+            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          />
+        </div>
+
+        <div>
+          <label class="text-sm text-slate-400">Password</label>
+          <input
+            id="login-password"
+            type="password"
+            placeholder="••••••••"
+            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          />
+        </div>
+
+        <button
+          onclick="login()"
+          class="w-full mt-4 rounded-lg bg-cyan-500 hover:bg-cyan-600 py-2 font-semibold text-slate-900 transition"
+        >
+          Sign In
+        </button>
+
+        <p class="text-center text-sm text-slate-400 mt-4">
+          Don’t have an account?
+          <button onclick="showRegister()" class="text-cyan-400 hover:underline">
+            Create one
+          </button>
+        </p>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="register-form" class="hidden space-y-4">
+        <input id="reg-email" type="email" placeholder="Email"
+          class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2" />
+        <input id="reg-password" type="password" placeholder="Password"
+          class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2" />
+        <input id="reg-code" type="text" placeholder="Registration Code"
+          class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2" />
+
+        <button onclick="register()"
+          class="w-full rounded-lg bg-emerald-500 hover:bg-emerald-600 py-2 font-semibold text-slate-900">
+          Create Account
+        </button>
+
+        <p class="text-center text-sm text-slate-400">
+          Have an account?
+          <button onclick="showLogin()" class="text-cyan-400 hover:underline">
+            Sign in
+          </button>
+        </p>
+      </div>
+
+      <div class="mt-6 text-center">
+        <button
+          onclick="adminAccess()"
+          class="text-sm text-purple-400 hover:underline"
+        >
+          🔐 Admin Access
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= APP SCREEN ================= -->
+  <section
+    id="app-screen"
+    class="hidden min-h-screen flex flex-col"
+  >
+    <!-- TOP BAR -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-lg font-bold tracking-wide">RJEZM DIGITAL</h1>
+        <p class="text-xs text-slate-400">Print Cost Calculator</p>
+      </div>
+      <button
+        id="logoutBtn"
+        class="text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
+      >
+        Logout
+      </button>
+    </header>
+
+    <!-- TABS -->
+    <nav class="flex gap-2 p-4 bg-slate-900 border-b border-slate-800 overflow-x-auto">
+      <button data-tab="inventory" class="tab-btn">Materials</button>
+      <button data-tab="costing" class="tab-btn">Costing</button>
+      <button data-tab="cmyk" class="tab-btn">CMYK</button>
+      <button data-tab="calculator" class="tab-btn">Calculator</button>
+      <button data-tab="receipt" class="tab-btn">Receipt</button>
+    </nav>
+
+    <!-- CONTENT -->
+    <main id="view" class="flex-1 p-6"></main>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-xs text-slate-500 py-4">
+      © 2026 RJEZM DIGITAL • Print Cost Calculator
+    </footer>
+  </section>
+
+  <!-- MAIN JS (MODULE, RELATIVE PATH) -->
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
