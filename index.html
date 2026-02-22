@@ -2,240 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RJEZM DIGITAL – Print Cost Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Optional custom CSS -->
+  <!-- App CSS -->
   <link rel="stylesheet" href="./app.css" />
 </head>
 
-<body class="min-h-screen bg-slate-950 text-white">
+<body class="min-h-screen bg-slate-950 text-white flex flex-col">
 
   <!-- ================= AUTH SCREEN ================= -->
-  <section
-    id="auth-screen"
-    class="min-h-screen flex items-center justify-center px-4"
-  >
-    <div class="w-full max-w-md bg-slate-900 p-6 rounded-xl border border-slate-800">
-
-      <h1 class="text-2xl font-bold text-center mb-6 text-cyan-400">
+  <section id="auth-screen" class="flex-1 flex items-center justify-center">
+    <div class="w-full max-w-md bg-slate-900 p-6 rounded-xl shadow-xl">
+      <h1 class="text-2xl font-bold text-center text-cyan-400 mb-6">
         RJEZM DIGITAL
       </h1>
 
-      <!-- LOGIN -->
-      <div id="login-form">
-        <input
-          id="login-email"
-          type="email"
-          placeholder="Email"
-          class="w-full mb-3 p-3 rounded bg-slate-800 border border-slate-700"
-        />
+      <input
+        id="login-email"
+        type="email"
+        placeholder="Email"
+        class="w-full mb-3 p-3 rounded bg-slate-800 border border-slate-700"
+      />
 
-        <input
-          id="login-password"
-          type="password"
-          placeholder="Password"
-          class="w-full mb-4 p-3 rounded bg-slate-800 border border-slate-700"
-        />
+      <input
+        id="login-password"
+        type="password"
+        placeholder="Password"
+        class="w-full mb-4 p-3 rounded bg-slate-800 border border-slate-700"
+      />
 
-        <button
-          onclick="handleLogin()"
-          class="w-full mb-3 py-3 rounded bg-cyan-500 text-black font-bold"
-        >
-          Sign In
-        </button>
+      <button
+        onclick="login()"
+        class="w-full py-3 mb-3 rounded bg-cyan-500 text-black font-bold"
+      >
+        Sign In
+      </button>
 
-        <button
-          onclick="switchToSignup()"
-          class="w-full py-2 rounded bg-slate-700 text-slate-200"
-        >
-          Create Account
-        </button>
+      <button
+        onclick="signup()"
+        class="w-full py-3 rounded bg-emerald-500 text-black font-bold"
+      >
+        Create Account
+      </button>
 
-        <p
-          id="login-error"
-          class="hidden mt-3 text-sm text-red-400 text-center"
-        ></p>
-      </div>
-
-      <!-- SIGN UP -->
-      <div id="signup-form" class="hidden">
-        <input
-          id="signup-email"
-          type="email"
-          placeholder="Email"
-          class="w-full mb-3 p-3 rounded bg-slate-800 border border-slate-700"
-        />
-
-        <input
-          id="signup-password"
-          type="password"
-          placeholder="Password"
-          class="w-full mb-4 p-3 rounded bg-slate-800 border border-slate-700"
-        />
-
-        <button
-          onclick="handleSignup()"
-          class="w-full mb-3 py-3 rounded bg-emerald-500 text-black font-bold"
-        >
-          Create Account
-        </button>
-
-        <button
-          onclick="switchToLogin()"
-          class="w-full py-2 rounded bg-slate-700 text-slate-200"
-        >
-          Back to Sign In
-        </button>
-
-        <p
-          id="signup-error"
-          class="hidden mt-3 text-sm text-red-400 text-center"
-        ></p>
-      </div>
-
+      <p id="status-msg" class="text-center text-sm text-slate-400 mt-4"></p>
     </div>
   </section>
 
   <!-- ================= ADMIN SCREEN ================= -->
-  <section
-    id="admin-screen"
-    class="hidden min-h-screen p-6"
-  >
-    <h1 class="text-2xl font-bold text-purple-400 mb-4">
-      Admin Dashboard
-    </h1>
+  <section id="admin-screen" class="hidden flex-1 p-6">
+    <div class="w-full">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-purple-400">Admin Dashboard</h2>
+        <button
+          onclick="logout()"
+          class="px-4 py-2 rounded bg-red-500 text-black font-bold"
+        >
+          Logout
+        </button>
+      </div>
 
-    <button
-      onclick="handleLogout()"
-      class="px-4 py-2 rounded bg-red-500 text-black font-bold"
-    >
-      Logout
-    </button>
+      <div class="bg-slate-900 p-6 rounded-lg">
+        <p class="text-slate-300">
+          Welcome, Admin.  
+          This is your admin-only dashboard.
+        </p>
+      </div>
+    </div>
   </section>
 
   <!-- ================= APP SCREEN ================= -->
-  <section
-    id="app-screen"
-    class="hidden min-h-screen p-6"
-  >
-    <h1 class="text-2xl font-bold text-emerald-400 mb-4">
-      Print Cost Calculator
-    </h1>
-
-    <button
-      onclick="handleLogout()"
-      class="px-4 py-2 rounded bg-red-500 text-black font-bold"
-    >
-      Logout
-    </button>
-  </section>
-
-  <!-- ================= FIREBASE LOGIC ================= -->
-  <script type="module">
-    import { auth } from "./firebase.js";
-    import {
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    const ADMIN_EMAIL = "admin@rjezmdigital.com";
-
-    // ---------- UI SWITCH ----------
-    window.switchToSignup = () => {
-      document.getElementById("login-form").classList.add("hidden");
-      document.getElementById("signup-form").classList.remove("hidden");
-    };
-
-    window.switchToLogin = () => {
-      document.getElementById("signup-form").classList.add("hidden");
-      document.getElementById("login-form").classList.remove("hidden");
-    };
-
-    // ---------- LOGIN ----------
-    window.handleLogin = async () => {
-      const email = login-email.value.trim();
-      const password = login-password.value.trim();
-      const errorEl = document.getElementById("login-error");
-      errorEl.classList.add("hidden");
-
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.classList.remove("hidden");
-      }
-    };
-
-    // ---------- SIGNUP ----------
-    window.handleSignup = async () => {
-      const email = signup-email.value.trim();
-      const password = signup-password.value.trim();
-      const errorEl = document.getElementById("signup-error");
-      errorEl.classList.add("hidden");
-
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        switchToLogin();
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.classList.remove("hidden");
-      }
-    };
-
-    // ---------- LOGOUT ----------
-    window.handleLogout = async () => {
-      await signOut(auth);
-    };
-
-    // ---------- AUTH STATE ----------
-    onAuthStateChanged(auth, user => {
-      const authScreen = document.getElementById("auth-screen");
-      const adminScreen = document.getElementById("admin-screen");
-      const appScreen = document.getElementById("app-screen");
-
-      if (user) {
-        authScreen.classList.add("hidden");
-
-        if (user.email === ADMIN_EMAIL) {
-          adminScreen.classList.remove("hidden");
-          appScreen.classList.add("hidden");
-        } else {
-          appScreen.classList.remove("hidden");
-          adminScreen.classList.add("hidden");
-        }
-      } else {
-        authScreen.classList.remove("hidden");
-        adminScreen.classList.add("hidden");
-        appScreen.classList.add("hidden");
-      }
-    });
-  </script>
-
-</body>
-    </header>
-
-    <!-- MAIN CONTENT PLACEHOLDER -->
-    <main class="flex-1 p-6">
-      <div class="text-center text-slate-400">
-        Logged in successfully.
+  <section id="app-screen" class="hidden flex-1 p-6">
+    <div class="w-full">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-cyan-400">
+          Print Cost Calculator
+        </h2>
+        <button
+          onclick="logout()"
+          class="px-4 py-2 rounded bg-red-500 text-black font-bold"
+        >
+          Logout
+        </button>
       </div>
-    </main>
 
-    <!-- FOOTER -->
-    <footer class="text-center text-xs text-slate-500 py-4 border-t border-slate-800">
-      © 2026 RJEZM DIGITAL • Print Cost Calculator
-    </footer>
+      <div class="bg-slate-900 p-6 rounded-lg">
+        <p class="text-slate-300">
+          App loaded successfully.  
+          (Materials, CMYK, Calculator, Receipt go here.)
+        </p>
+      </div>
+    </div>
   </section>
 
-  <!-- ================= MODULE SCRIPTS ================= -->
-  <script type="module" src="./js/firebase.js"></script>
-  <script type="module" src="./js/auth.js"></script>
+  <!-- ================= FOOTER ================= -->
+  <footer class="border-t border-slate-800 bg-slate-900 py-4 px-4">
+    <div class="max-w-7xl mx-auto text-center space-y-1">
+      <p class="text-slate-400 text-xs">
+        <span class="font-bold text-cyan-400">RJEZM DIGITAL</span>
+        • Print Cost Calculator ♦ Version 10
+      </p>
+      <p class="text-slate-600 text-xs">
+        © 2026 RJEZM DIGITAL. All rights reserved.
+      </p>
+    </div>
+  </footer>
 
+  <!-- ================= SCRIPTS ================= -->
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

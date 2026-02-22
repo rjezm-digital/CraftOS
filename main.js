@@ -1,9 +1,2 @@
 import "./firebase.js";
 import "./auth.js";
-import "./ui.js";
-import "./inventory.js";
-import "./costing.js";
-import "./cmyk.js";
-import "./calculator.js";
-import "./receipt.js";
-import "./admin.js";
