@@ -12,141 +12,212 @@
   <link rel="stylesheet" href="./app.css" />
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
+<body class="min-h-screen bg-slate-950 text-white">
 
-  <!-- ================= LOGIN / REGISTER SCREEN ================= -->
+  <!-- ================= AUTH SCREEN ================= -->
   <section
-    id="login-screen"
+    id="auth-screen"
     class="min-h-screen flex items-center justify-center px-4"
   >
-    <div class="w-full max-w-md bg-slate-900/80 backdrop-blur rounded-2xl shadow-xl p-8">
+    <div class="w-full max-w-md bg-slate-900 p-6 rounded-xl border border-slate-800">
 
-      <!-- BRAND -->
-      <div class="text-center mb-6">
-        <div class="mx-auto mb-4 h-14 w-14 rounded-xl bg-cyan-400/20 flex items-center justify-center">
-          <div class="h-6 w-6 rotate-45 bg-cyan-400"></div>
-        </div>
-        <h1 class="text-2xl font-bold tracking-wide text-cyan-400">
-          RJEZM DIGITAL
-        </h1>
-        <p class="text-sm text-slate-400">Print Cost Calculator</p>
-      </div>
+      <h1 class="text-2xl font-bold text-center mb-6 text-cyan-400">
+        RJEZM DIGITAL
+      </h1>
 
-      <!-- ================= LOGIN FORM ================= -->
-      <div id="login-form" class="space-y-4">
+      <!-- LOGIN -->
+      <div id="login-form">
+        <input
+          id="login-email"
+          type="email"
+          placeholder="Email"
+          class="w-full mb-3 p-3 rounded bg-slate-800 border border-slate-700"
+        />
 
-        <div>
-          <label class="text-sm text-slate-400">Email</label>
-          <input
-            id="login-email"
-            type="email"
-            placeholder="your@email.com"
-            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          />
-        </div>
-
-        <div>
-          <label class="text-sm text-slate-400">Password</label>
-          <input
-            id="login-password"
-            type="password"
-            placeholder="••••••••"
-            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          />
-        </div>
+        <input
+          id="login-password"
+          type="password"
+          placeholder="Password"
+          class="w-full mb-4 p-3 rounded bg-slate-800 border border-slate-700"
+        />
 
         <button
-          onclick="login()"
-          class="w-full mt-4 rounded-lg bg-cyan-500 hover:bg-cyan-600 py-2 font-semibold text-slate-900 transition"
+          onclick="handleLogin()"
+          class="w-full mb-3 py-3 rounded bg-cyan-500 text-black font-bold"
         >
           Sign In
         </button>
 
-        <p class="text-center text-sm text-slate-400 mt-4">
-          Don’t have an account?
-          <button onclick="showRegister()" class="text-cyan-400 hover:underline">
-            Create one
-          </button>
-        </p>
-      </div>
-
-      <!-- ================= REGISTER FORM ================= -->
-      <div id="register-form" class="hidden space-y-4">
-
-        <div>
-          <label class="text-sm text-slate-400">Email</label>
-          <input
-            id="reg-email"
-            type="email"
-            placeholder="your@email.com"
-            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2"
-          />
-        </div>
-
-        <div>
-          <label class="text-sm text-slate-400">Password</label>
-          <input
-            id="reg-password"
-            type="password"
-            placeholder="Create password"
-            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2"
-          />
-        </div>
-
-        <div>
-          <label class="text-sm text-slate-400">Registration Code</label>
-          <input
-            id="reg-code"
-            type="text"
-            placeholder="Enter code"
-            class="w-full mt-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2"
-          />
-        </div>
-
         <button
-          onclick="register()"
-          class="w-full mt-4 rounded-lg bg-emerald-500 hover:bg-emerald-600 py-2 font-semibold text-slate-900 transition"
+          onclick="switchToSignup()"
+          class="w-full py-2 rounded bg-slate-700 text-slate-200"
         >
           Create Account
         </button>
 
-        <p class="text-center text-sm text-slate-400 mt-4">
-          Have an account?
-          <button onclick="showLogin()" class="text-cyan-400 hover:underline">
-            Sign in
-          </button>
-        </p>
+        <p
+          id="login-error"
+          class="hidden mt-3 text-sm text-red-400 text-center"
+        ></p>
       </div>
 
-      <!-- ADMIN ACCESS -->
-      <div class="mt-6 text-center">
+      <!-- SIGN UP -->
+      <div id="signup-form" class="hidden">
+        <input
+          id="signup-email"
+          type="email"
+          placeholder="Email"
+          class="w-full mb-3 p-3 rounded bg-slate-800 border border-slate-700"
+        />
+
+        <input
+          id="signup-password"
+          type="password"
+          placeholder="Password"
+          class="w-full mb-4 p-3 rounded bg-slate-800 border border-slate-700"
+        />
+
         <button
-          onclick="adminAccess()"
-          class="text-sm text-purple-400 hover:underline"
+          onclick="handleSignup()"
+          class="w-full mb-3 py-3 rounded bg-emerald-500 text-black font-bold"
         >
-          🔐 Admin Access
+          Create Account
         </button>
+
+        <button
+          onclick="switchToLogin()"
+          class="w-full py-2 rounded bg-slate-700 text-slate-200"
+        >
+          Back to Sign In
+        </button>
+
+        <p
+          id="signup-error"
+          class="hidden mt-3 text-sm text-red-400 text-center"
+        ></p>
       </div>
+
     </div>
+  </section>
+
+  <!-- ================= ADMIN SCREEN ================= -->
+  <section
+    id="admin-screen"
+    class="hidden min-h-screen p-6"
+  >
+    <h1 class="text-2xl font-bold text-purple-400 mb-4">
+      Admin Dashboard
+    </h1>
+
+    <button
+      onclick="handleLogout()"
+      class="px-4 py-2 rounded bg-red-500 text-black font-bold"
+    >
+      Logout
+    </button>
   </section>
 
   <!-- ================= APP SCREEN ================= -->
   <section
     id="app-screen"
-    class="hidden min-h-screen flex flex-col"
+    class="hidden min-h-screen p-6"
   >
-    <!-- HEADER -->
-    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
-      <div>
-        <h1 class="text-lg font-bold tracking-wide">RJEZM DIGITAL</h1>
-        <p class="text-xs text-slate-400">Print Cost Calculator</p>
-      </div>
-      <button
-        onclick="logout()"
-        class="text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
-      >
-        Logout
-      </button>
+    <h1 class="text-2xl font-bold text-emerald-400 mb-4">
+      Print Cost Calculator
+    </h1>
+
+    <button
+      onclick="handleLogout()"
+      class="px-4 py-2 rounded bg-red-500 text-black font-bold"
+    >
+      Logout
+    </button>
+  </section>
+
+  <!-- ================= FIREBASE LOGIC ================= -->
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import {
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const ADMIN_EMAIL = "admin@rjezmdigital.com";
+
+    // ---------- UI SWITCH ----------
+    window.switchToSignup = () => {
+      document.getElementById("login-form").classList.add("hidden");
+      document.getElementById("signup-form").classList.remove("hidden");
+    };
+
+    window.switchToLogin = () => {
+      document.getElementById("signup-form").classList.add("hidden");
+      document.getElementById("login-form").classList.remove("hidden");
+    };
+
+    // ---------- LOGIN ----------
+    window.handleLogin = async () => {
+      const email = login-email.value.trim();
+      const password = login-password.value.trim();
+      const errorEl = document.getElementById("login-error");
+      errorEl.classList.add("hidden");
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove("hidden");
+      }
+    };
+
+    // ---------- SIGNUP ----------
+    window.handleSignup = async () => {
+      const email = signup-email.value.trim();
+      const password = signup-password.value.trim();
+      const errorEl = document.getElementById("signup-error");
+      errorEl.classList.add("hidden");
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        switchToLogin();
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove("hidden");
+      }
+    };
+
+    // ---------- LOGOUT ----------
+    window.handleLogout = async () => {
+      await signOut(auth);
+    };
+
+    // ---------- AUTH STATE ----------
+    onAuthStateChanged(auth, user => {
+      const authScreen = document.getElementById("auth-screen");
+      const adminScreen = document.getElementById("admin-screen");
+      const appScreen = document.getElementById("app-screen");
+
+      if (user) {
+        authScreen.classList.add("hidden");
+
+        if (user.email === ADMIN_EMAIL) {
+          adminScreen.classList.remove("hidden");
+          appScreen.classList.add("hidden");
+        } else {
+          appScreen.classList.remove("hidden");
+          adminScreen.classList.add("hidden");
+        }
+      } else {
+        authScreen.classList.remove("hidden");
+        adminScreen.classList.add("hidden");
+        appScreen.classList.add("hidden");
+      }
+    });
+  </script>
+
+</body>
     </header>
 
     <!-- MAIN CONTENT PLACEHOLDER -->
